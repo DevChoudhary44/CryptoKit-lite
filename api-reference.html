@@ -1,0 +1,1253 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8ff">
+  <title>API Reference | CryptoKit</title>
+  <meta name="description" content="Explore CryptoKit API documentation, example requests, responses, and HTTP status codes.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+   </script>
+
+  <style>
+    /* ============ THEME TOKENS ============ */
+    [data-theme="normal"] {
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0a0e27;
+      --bg-alt: #0f1538;
+      --panel: rgba(255,255,255,0.03);
+      --panel-solid: #11173a;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --border: rgba(255,255,255,0.08);
+      --glass: rgba(255,255,255,0.04);
+      --shadow: 0 20px 60px rgba(0,0,0,0.4);
+      --scrollbar-track: #0a0e27;
+      --scrollbar-thumb: #6366f1;
+    }
+
+    [data-theme="hacker"] {
+      --primary: #00ff41;
+      --secondary: #39ff14;
+      --accent: #00ffff;
+      --success: #00ff41;
+      --warning: #ffb000;
+      --danger: #ff0040;
+      --green-dark: #003b00;
+      --green-mid: #008f11;
+      --green-bright: #00ff41;
+      --green-glow: #39ff14;
+      --accent-red: #ff0040;
+      --accent-amber: #ffb000;
+      --accent-cyan: #00ffff;
+      --accent-magenta: #ff00ff;
+      --accent-yellow: #ffff00;
+      --accent-purple: #bf00ff;
+      --accent-orange: #ff8c00;
+      --hacker-bg: #030503;
+      --hacker-panel: #0A140A;
+      --hacker-terminal: #0D1B0D;
+      --bg: var(--hacker-bg);
+      --bg-alt: #050a05;
+      --panel: rgba(0,255,65,0.03);
+      --panel-solid: var(--hacker-panel);
+      --text: #c8ffd4;
+      --text-dim: #6bbf7a;
+      --border: rgba(0,255,65,0.2);
+      --glass: rgba(0,255,65,0.04);
+      --shadow: 0 20px 60px rgba(0,255,65,0.1);
+      --scrollbar-track: var(--hacker-bg);
+      --scrollbar-thumb: var(--green-bright);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 100px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    [data-theme="hacker"] body,
+    [data-theme="hacker"] p,
+    [data-theme="hacker"] span,
+    [data-theme="hacker"] a,
+    [data-theme="hacker"] li,
+    [data-theme="hacker"] button,
+    [data-theme="hacker"] input,
+    [data-theme="hacker"] textarea,
+    [data-theme="hacker"] select,
+    [data-theme="hacker"] label,
+    [data-theme="hacker"] td,
+    [data-theme="hacker"] th {
+      font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    }
+
+    a, button, input, .mode-option { outline: none; }
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    .mode-option:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+    /* ============ MATRIX / SCANLINES / BG ============ */
+    #matrix-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      opacity: 0.15; pointer-events: none; display: none;
+    }
+    [data-theme="hacker"] #matrix-canvas { display: block; }
+
+    .scanlines {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0,255,65,0.03) 0, rgba(0,255,65,0.03) 1px, transparent 1px, transparent 3px);
+      display: none;
+    }
+    [data-theme="hacker"] .scanlines { display: block; }
+
+    .bg-shapes { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .bg-shape-1, .bg-shape-2, .bg-shape-3 {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); opacity: 0.3;
+    }
+    .bg-shape-1 { width: 400px; height: 400px; background: var(--primary); top: -100px; left: -100px; animation: floatShape 8s ease-in-out infinite; }
+    .bg-shape-2 { width: 350px; height: 350px; background: var(--secondary); top: 40%; right: -100px; animation: floatShape 10s ease-in-out infinite reverse; }
+    .bg-shape-3 { width: 300px; height: 300px; background: var(--accent); bottom: -50px; left: 30%; animation: floatShape 6s ease-in-out infinite; }
+    @keyframes floatShape {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(30px,-30px) scale(1.1); }
+    }
+
+    /* ============ GLITCH ============ */
+    .glitch { position: relative; display: inline-block; }
+    [data-theme="hacker"] .glitch::before,
+    [data-theme="hacker"] .glitch::after {
+      content: attr(data-text);
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background: transparent;
+      -webkit-background-clip: initial;
+      background-clip: initial;
+      -webkit-text-fill-color: initial;
+    }
+    [data-theme="hacker"] .glitch::before {
+      left: 2px; text-shadow: -2px 0 var(--accent-red);
+      animation: glitch-anim-1 2s infinite linear alternate-reverse;
+      color: var(--accent-cyan);
+    }
+    [data-theme="hacker"] .glitch::after {
+      left: -2px; text-shadow: -2px 0 var(--accent-magenta);
+      animation: glitch-anim-2 3s infinite linear alternate-reverse;
+      color: var(--green-bright);
+    }
+    @keyframes glitch-anim-1 {
+      0%,100% { clip-path: inset(0 0 95% 0); }
+      20% { clip-path: inset(30% 0 50% 0); }
+      40% { clip-path: inset(60% 0 10% 0); }
+      60% { clip-path: inset(20% 0 70% 0); }
+      80% { clip-path: inset(80% 0 2% 0); }
+    }
+    @keyframes glitch-anim-2 {
+      0%,100% { clip-path: inset(90% 0 3% 0); }
+      20% { clip-path: inset(10% 0 80% 0); }
+      40% { clip-path: inset(50% 0 30% 0); }
+      60% { clip-path: inset(70% 0 15% 0); }
+      80% { clip-path: inset(5% 0 85% 0); }
+    }
+
+    @keyframes borderPulse {
+      0%,100% { border-color: var(--border); }
+      50% { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+    }
+
+    /* ============ THEME TRANSITION ============ */
+    .theme-transition-overlay {
+      position: fixed; inset: 0; background: #000; z-index: 9999;
+      pointer-events: none; opacity: 0; transition: opacity 0.4s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .theme-transition-overlay.active { opacity: 1; pointer-events: all; }
+    .transition-text {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--green-bright); font-size: 1.2rem;
+      text-shadow: 0 0 10px var(--green-bright);
+    }
+
+    /* ============ MODE SELECTOR ============ */
+    .mode-selector { position: relative; }
+    .mode-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 18px; background: var(--glass);
+      border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text); cursor: pointer;
+      font-size: 0.9rem; font-weight: 500;
+      transition: all 0.3s ease; backdrop-filter: blur(10px);
+    }
+    .mode-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .mode-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: var(--panel-solid); border: 1px solid var(--border);
+      border-radius: 12px; padding: 8px; min-width: 180px;
+      box-shadow: var(--shadow);
+      opacity: 0; visibility: hidden; transform: translateY(-10px);
+      transition: all 0.3s ease; z-index: 1001;
+    }
+    .mode-dropdown.active {
+      opacity: 1; visibility: visible; transform: translateY(0);
+      animation: dropIn 0.3s ease;
+    }
+    @keyframes dropIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .mode-option {
+      padding: 10px 14px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text); transition: background 0.2s ease;
+      font-size: 0.9rem;
+    }
+    .mode-option:hover, .mode-option:focus-visible { background: var(--glass); }
+
+    /* ============ NAVBAR ============ */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; height: 70px;
+      background: rgba(10,14,39,0.8); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border); z-index: 1000;
+      transition: background 0.5s ease;
+    }
+    [data-theme="hacker"] .navbar {
+      background: rgba(3,5,3,0.9); border-bottom-color: var(--border);
+    }
+    .nav-container {
+      max-width: 1400px; height: 100%; margin: 0 auto;
+      padding: 0 40px; display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      font-weight: 700; font-size: 1.3rem;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--primary);
+    }
+    .nav-logo-text {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    [data-theme="hacker"] .nav-logo-text {
+      background: linear-gradient(135deg, var(--green-bright), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links {
+      display: flex; gap: 30px; list-style: none; align-items: center;
+    }
+    .nav-links a {
+      color: var(--text-dim); text-decoration: none;
+      font-weight: 500; font-size: 0.95rem;
+      transition: color 0.3s ease; position: relative;
+    }
+    .nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--text); }
+    .nav-links a[aria-current="page"]::after {
+      content: ''; position: absolute; bottom: -6px; left: 0; right: 0;
+      height: 2px; background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 2px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 8px;
+    }
+    .hamburger span { width: 25px; height: 2px; background: var(--text); transition: all 0.3s ease; }
+    .mobile-menu {
+      display: none; position: fixed; top: 70px; left: 0; right: 0;
+      background: var(--panel-solid); border-bottom: 1px solid var(--border);
+      padding: 20px; flex-direction: column; gap: 15px; z-index: 999;
+    }
+    .mobile-menu.active { display: flex; }
+    .mobile-menu a {
+      color: var(--text); text-decoration: none;
+      padding: 10px; border-radius: 8px; transition: background 0.2s ease;
+    }
+    .mobile-menu a:hover { background: var(--glass); }
+
+    /* ============ PAGE HERO ============ */
+    .page-hero {
+      padding: 150px 40px 60px; text-align: center;
+      position: relative; z-index: 2;
+    }
+    .section-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; background: var(--glass);
+      border: 1px solid var(--border); border-radius: 100px;
+      font-size: 0.85rem; color: var(--text-dim);
+      margin-bottom: 20px; backdrop-filter: blur(10px);
+    }
+    .page-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 700; line-height: 1.15;
+      margin-bottom: 20px; letter-spacing: -1px;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    [data-theme="hacker"] .gradient-text {
+      background: linear-gradient(135deg, var(--green-bright), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-subtitle {
+      font-size: 1.15rem; color: var(--text-dim);
+      max-width: 730px; margin: 0 auto 25px; line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex; justify-content: center; flex-wrap: wrap;
+      gap: 14px; margin-top: 10px;
+    }
+    .hero-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 22px; border-radius: 12px;
+      font-size: 0.95rem; font-weight: 600;
+      text-decoration: none; cursor: pointer;
+      transition: all 0.3s ease; border: 1px solid var(--border);
+      background: var(--glass); color: var(--text);
+    }
+    .hero-btn:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .hero-btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-color: transparent; color: #fff;
+      box-shadow: 0 10px 30px rgba(99,102,241,0.3);
+    }
+    [data-theme="hacker"] .hero-btn.primary {
+      background: var(--green-bright); color: var(--hacker-bg);
+      box-shadow: 0 0 20px rgba(0,255,65,0.4);
+    }
+
+    /* ============ CONTENT ============ */
+    .content-wrapper {
+      max-width: 1200px; margin: 0 auto;
+      padding: 20px 40px 100px;
+      position: relative; z-index: 2;
+    }
+
+    .demo-note {
+      padding: 16px 20px; margin-bottom: 24px;
+      border: 1px solid rgba(245,158,11,0.3);
+      border-left: 4px solid var(--warning);
+      border-radius: 12px;
+      background: rgba(245,158,11,0.08);
+      color: var(--text);
+      font-size: 0.9rem; line-height: 1.75;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .demo-note i { color: var(--warning); margin-top: 3px; flex-shrink: 0; }
+    [data-theme="hacker"] .demo-note {
+      background: rgba(255,176,0,0.05);
+      border-left-color: var(--accent-amber);
+    }
+
+    .api-layout {
+      display: grid;
+      grid-template-columns: 255px minmax(0, 1fr);
+      align-items: start;
+      gap: 26px;
+    }
+
+    /* ============ SIDEBAR ============ */
+    .api-sidebar {
+      padding: 20px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 90px;
+    }
+    .api-sidebar h3 {
+      margin: 0 10px 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text);
+      font-size: 0.75rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .api-sidebar-links { display: flex; flex-direction: column; gap: 2px; }
+    .api-sidebar a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      color: var(--text-dim); text-decoration: none;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    .api-sidebar a i { width: 16px; text-align: center; font-size: 0.8rem; }
+    .api-sidebar a:hover,
+    .api-sidebar a.active {
+      background: var(--glass);
+      color: var(--primary);
+      border-left: 2px solid var(--primary);
+      padding-left: 10px;
+    }
+    [data-theme="hacker"] .api-sidebar a:hover,
+    [data-theme="hacker"] .api-sidebar a.active {
+      background: rgba(0,255,65,0.08);
+      color: var(--green-bright);
+      border-left-color: var(--green-bright);
+    }
+
+    /* ============ API SECTIONS (reused policy-card style) ============ */
+    .api-content { min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+
+    .policy-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      scroll-margin-top: 90px;
+    }
+    .policy-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    [data-theme="hacker"] .policy-card {
+      animation: borderPulse 3s ease-in-out infinite;
+    }
+    [data-theme="hacker"] .policy-card:hover { animation: none; }
+
+    .policy-card h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: 14px;
+      color: var(--text);
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+    }
+    [data-theme="hacker"] .policy-card h2 {
+      color: var(--green-bright);
+      text-shadow: 0 0 10px rgba(0,255,65,0.3);
+    }
+    .policy-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      margin: 24px 0 12px;
+      color: var(--text);
+      font-size: 1.05rem;
+    }
+    .policy-card p {
+      color: var(--text-dim);
+      line-height: 1.75;
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+    [data-theme="hacker"] .policy-card p { color: var(--text); }
+    .policy-card ul { padding-left: 22px; margin-top: 10px; }
+    .policy-card li {
+      color: var(--text-dim);
+      line-height: 2;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+    [data-theme="hacker"] .policy-card li { color: var(--text); }
+
+    /* ============ BASE URL / TAGS ============ */
+    .base-url {
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap; padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+    .base-url code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--primary);
+      overflow-wrap: anywhere;
+    }
+    [data-theme="hacker"] .base-url code {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--green-bright);
+    }
+
+    .api-tag {
+      padding: 4px 10px; border-radius: 6px;
+      background: rgba(16,185,129,0.15);
+      color: var(--success);
+      font: 700 0.7rem 'JetBrains Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+    [data-theme="hacker"] .api-tag {
+      background: rgba(0,255,65,0.1);
+      color: var(--green-bright);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* ============ ENDPOINTS ============ */
+    .api-endpoint {
+      overflow: hidden;
+      margin: 14px 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+    .endpoint-top {
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      background: var(--glass);
+      border-bottom: 1px solid var(--border);
+    }
+    .method {
+      padding: 5px 10px; border-radius: 6px;
+      font: 700 0.72rem 'JetBrains Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+    .method.get { background: rgba(16,185,129,0.15); color: var(--success); }
+    .method.post { background: rgba(99,102,241,0.15); color: var(--primary); }
+    .method.put { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .method.delete { background: rgba(239,68,68,0.15); color: var(--danger); }
+    [data-theme="hacker"] .method.get { background: rgba(0,255,65,0.1); color: var(--green-bright); }
+    [data-theme="hacker"] .method.post { background: rgba(0,255,255,0.1); color: var(--accent-cyan); }
+    [data-theme="hacker"] .method.put { background: rgba(255,176,0,0.1); color: var(--accent-amber); }
+    [data-theme="hacker"] .method.delete { background: rgba(255,0,64,0.1); color: var(--accent-red); }
+
+    .endpoint-top code {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    [data-theme="hacker"] .endpoint-top code {
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .endpoint-description {
+      padding: 12px 16px 14px;
+      margin: 0;
+      font-size: 0.88rem !important;
+      color: var(--text-dim) !important;
+    }
+
+    /* ============ CODE BLOCKS ============ */
+    .api-code {
+      overflow: hidden;
+      margin-top: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0a0e1f;
+      color: #e2e9ff;
+    }
+    [data-theme="hacker"] .api-code {
+      background: var(--hacker-terminal);
+      border-color: var(--green-bright);
+      box-shadow: inset 0 0 20px rgba(0,255,65,0.05);
+    }
+    .api-code-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      color: #aab6d0; font-size: 0.78rem;
+    }
+    [data-theme="hacker"] .api-code-head {
+      border-bottom-color: var(--border);
+      color: var(--green-bright);
+    }
+    .copy-button {
+      padding: 6px 11px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 7px;
+      background: rgba(255,255,255,0.04);
+      color: #dce5ff;
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .copy-button:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: var(--primary);
+    }
+    [data-theme="hacker"] .copy-button {
+      font-family: 'Share Tech Mono', monospace;
+      border-color: var(--border);
+      background: rgba(0,255,65,0.05);
+      color: var(--green-bright);
+    }
+    [data-theme="hacker"] .copy-button:hover {
+      background: rgba(0,255,65,0.12);
+    }
+
+    .api-code pre {
+      padding: 16px;
+      margin: 0;
+      overflow-x: auto;
+      font: 0.82rem/1.9 'JetBrains Mono', monospace;
+      white-space: pre;
+      tab-size: 2;
+      color: #e2e9ff;
+    }
+    [data-theme="hacker"] .api-code pre {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text);
+    }
+
+    .code-purple { color: #c6a5ff; }
+    .code-green { color: #8ce6a9; }
+    .code-blue { color: #83d8ff; }
+    .code-orange { color: #ffc786; }
+    [data-theme="hacker"] .code-purple { color: var(--accent-magenta); }
+    [data-theme="hacker"] .code-green { color: var(--green-bright); }
+    [data-theme="hacker"] .code-blue { color: var(--accent-cyan); }
+    [data-theme="hacker"] .code-orange { color: var(--accent-amber); }
+
+    /* ============ TABLES ============ */
+    .api-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+    .api-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      min-width: 500px;
+    }
+    .api-table th {
+      padding: 13px 14px;
+      background: var(--panel);
+      color: var(--text);
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    .api-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.7;
+      vertical-align: top;
+      color: var(--text-dim);
+    }
+    [data-theme="hacker"] .api-table td { color: var(--text); }
+    .api-table tr:last-child td { border-bottom: 0; }
+
+    .api-status {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 6px;
+      font: 700 0.72rem 'JetBrains Mono', monospace;
+    }
+    [data-theme="hacker"] .api-status {
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .api-status.success { background: rgba(16,185,129,0.15); color: var(--success); }
+    .api-status.warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .api-status.error { background: rgba(239,68,68,0.15); color: var(--danger); }
+    [data-theme="hacker"] .api-status.success { background: rgba(0,255,65,0.1); color: var(--green-bright); }
+    [data-theme="hacker"] .api-status.warning { background: rgba(255,176,0,0.1); color: var(--accent-amber); }
+    [data-theme="hacker"] .api-status.error { background: rgba(255,0,64,0.1); color: var(--accent-red); }
+
+    /* ============ BOXES ============ */
+    .highlight-box, .warning-box, .info-box {
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin-top: 16px;
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 0.9rem; line-height: 1.7;
+      color: var(--text);
+    }
+    .highlight-box { background: rgba(99,102,241,0.1); border-left: 3px solid var(--primary); }
+    .warning-box { background: rgba(245,158,11,0.1); border-left: 3px solid var(--warning); }
+    .info-box { background: rgba(6,182,212,0.1); border-left: 3px solid var(--accent); }
+    [data-theme="hacker"] .highlight-box { background: rgba(0,255,65,0.05); border-left-color: var(--green-bright); }
+    [data-theme="hacker"] .warning-box { background: rgba(255,176,0,0.05); border-left-color: var(--accent-amber); }
+    [data-theme="hacker"] .info-box { background: rgba(0,255,255,0.05); border-left-color: var(--accent-cyan); }
+
+    .code-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      padding: 2px 6px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--primary);
+    }
+    [data-theme="hacker"] .code-text {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--green-bright);
+    }
+
+    /* ============ FOOTER ============ */
+    footer {
+      background: var(--panel-solid);
+      border-top: 1px solid var(--border);
+      padding: 60px 40px 30px;
+      position: relative; z-index: 2;
+    }
+    .footer-content {
+      max-width: 1400px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 60px; margin-bottom: 40px;
+    }
+    .footer-brand-logo {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-weight: 700; font-size: 1.3rem;
+      color: var(--text); text-decoration: none;
+      margin-bottom: 20px;
+    }
+    .footer-brand p {
+      color: var(--text-dim); line-height: 1.7;
+      max-width: 350px; margin-bottom: 20px;
+    }
+    .social-links { display: flex; gap: 12px; }
+    .social-btn {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: var(--glass); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim); text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .social-btn:hover {
+      border-color: var(--primary); color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .footer-col h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      margin-bottom: 20px; color: var(--text);
+    }
+    .footer-col ul {
+      list-style: none; display: flex;
+      flex-direction: column; gap: 12px;
+    }
+    .footer-col a {
+      color: var(--text-dim); text-decoration: none;
+      font-size: 0.9rem; transition: color 0.3s ease;
+    }
+    .footer-col a:hover { color: var(--primary); }
+    .footer-bottom {
+      max-width: 1400px; margin: 0 auto;
+      padding-top: 30px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 20px;
+      color: var(--text-dim); font-size: 0.9rem;
+    }
+
+    /* ============ SCROLL TOP ============ */
+    .scroll-top {
+      position: fixed; bottom: 30px; right: 30px;
+      width: 50px; height: 50px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none; color: #fff; font-size: 1.2rem;
+      cursor: pointer; opacity: 0; visibility: hidden;
+      transition: all 0.3s ease; z-index: 999;
+    }
+    .scroll-top.visible { opacity: 1; visibility: visible; }
+    .scroll-top:hover { transform: translateY(-3px); }
+    [data-theme="hacker"] .scroll-top {
+      background: var(--green-bright); color: var(--hacker-bg);
+      box-shadow: 0 0 15px rgba(0,255,65,0.5);
+    }
+
+    /* ============ HACKER OVERRIDES ============ */
+    [data-theme="hacker"] body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none; z-index: 0;
+      animation: hk-grid-move 20s linear infinite;
+    }
+    @keyframes hk-grid-move {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+    [data-theme="hacker"] .section-badge {
+      background: rgba(0,255,65,0.05);
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+    }
+    [data-theme="hacker"] .mode-btn {
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+    }
+    [data-theme="hacker"] footer { background: var(--hacker-panel); }
+
+    /* ============ REDUCED MOTION ============ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 950px) {
+      .api-layout { grid-template-columns: 1fr; }
+      .api-sidebar { position: static; }
+      .api-sidebar-links { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-container { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .page-hero { padding: 120px 20px 40px; }
+      .content-wrapper { padding: 20px 20px 60px; }
+      .policy-card { padding: 24px; }
+      .policy-card h2 { font-size: 1.3rem; }
+      .footer-content { grid-template-columns: 1fr; gap: 40px; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-container { padding: 0 15px; }
+      .page-title { font-size: 2rem; }
+      .page-subtitle { font-size: 1rem; }
+      .policy-card { padding: 18px; }
+      .policy-card h2 { font-size: 1.15rem; }
+      .api-sidebar-links { grid-template-columns: 1fr; }
+      .api-code pre { font-size: 0.75rem; padding: 12px; }
+      .endpoint-top { gap: 8px; padding: 12px; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="ck-header">
+    <a class="ck-brand" href="index.html" aria-label="CryptoKit Home">
+      <span class="ck-logo"><i class="fa-solid fa-shield-halved"></i></span>
+      <span class="ck-brand-name">CryptoKit</span>
+    </a>
+
+    <nav class="ck-nav" aria-label="Main navigation">
+      <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="Terms.html">Terms</a>
+      <a href="index.html#contact">Support</a>
+    </nav>
+
+    <div class="ck-theme-wrap">
+      <button class="ck-theme-button" id="themeButton" aria-expanded="false">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span id="themeLabel">Normal</span>
+        <i class="fa-solid fa-caret-down" style="margin:0 0 0 7px;color:inherit"></i>
+      </button>
+      <div class="ck-theme-menu" id="themeMenu">
+        <button type="button" data-theme="normal">✨ Normal</button>
+        <button type="button" data-theme="hacker">⌘ Hacker</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="api-hero">
+    <div class="api-eyebrow"><i class="fa-solid fa-code"></i> DEVELOPER DOCUMENTATION</div>
+    <h1>API Reference</h1>
+    <p>Explore the CryptoKit API documentation, understand request formats, and prepare integrations with cryptography services.</p>
+    <div class="api-hero-actions">
+      <a class="api-button primary" href="#getting-started"><i class="fa-solid fa-book-open"></i> Get Started</a>
+      <a class="api-button" href="#endpoints"><i class="fa-solid fa-terminal"></i> Browse Endpoints</a>
+    </div>
+  </section>
+
+  <main class="api-main">
+
+    <div class="api-demo-note">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <strong>Documentation preview:</strong> the base URL and endpoints below are illustrative examples only. They will not work until matching API routes are implemented and deployed in your backend. Do not send real secrets or sensitive data to these examples.
+    </div>
+
+    <div class="api-layout">
+
+      <!-- SIDEBAR -->
+      <aside class="api-sidebar">
+        <h3>Documentation</h3>
+        <nav class="api-sidebar-links" aria-label="API documentation sections">
+          <a href="#getting-started" class="active"><i class="fa-solid fa-rocket"></i> Getting Started</a>
+          <a href="#authentication"><i class="fa-solid fa-key"></i> Authentication</a>
+          <a href="#endpoints"><i class="fa-solid fa-diagram-project"></i> Endpoints</a>
+          <a href="#example-request"><i class="fa-solid fa-terminal"></i> Example Request</a>
+          <a href="#responses"><i class="fa-solid fa-code"></i> Responses</a>
+          <a href="#errors"><i class="fa-solid fa-circle-exclamation"></i> Error Codes</a>
+          <a href="#rate-limits"><i class="fa-solid fa-gauge-high"></i> Rate Limits</a>
+          <a href="#security"><i class="fa-solid fa-shield-halved"></i> Security</a>
+        </nav>
+      </aside>
+
+      <!-- DOCUMENTATION -->
+      <div class="api-content">
+
+        <section class="api-section" id="getting-started">
+          <h2>Getting Started</h2>
+          <p>This reference describes a proposed HTTP API structure for integrating CryptoKit services. Confirm the routes and request formats with your actual backend implementation before using them in an application.</p>
+
+          <h3>Example Base URL</h3>
+          <div class="base-url">
+            <span class="api-tag">BASE URL</span>
+            <code>https://api.example.com/v1</code>
+            <button class="copy-button" data-copy="https://api.example.com/v1" type="button"><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+
+          <h3>Request format</h3>
+          <p>Example requests use HTTPS and JSON. A real API should document its supported methods, accepted input, output schema, authentication requirements, and limits.</p>
+
+          <div class="api-code">
+            <div class="api-code-head">
+              <span><i class="fa-solid fa-terminal"></i> Example headers</span>
+              <button class="copy-button" data-copy="Content-Type: application/json&#10;Accept: application/json" type="button">Copy</button>
+            </div>
+            <pre><code>Content-Type: application/json
+Accept: application/json</code></pre>
+          </div>
+        </section>
+
+        <section class="api-section" id="authentication">
+          <h2>Authentication</h2>
+          <p>For endpoints that require authentication, a backend may issue API credentials to authorized clients. The example below demonstrates a conventional bearer-token header; it does not mean CryptoKit currently issues API tokens.</p>
+
+          <div class="api-code">
+            <div class="api-code-head">
+              <span>HTTP header example</span>
+              <button class="copy-button" data-copy="Authorization: Bearer YOUR_API_TOKEN" type="button">Copy</button>
+            </div>
+            <pre><code>Authorization: Bearer YOUR_API_TOKEN</code></pre>
+          </div>
+
+          <div class="api-bottom-note">
+            <i class="fa-solid fa-lock"></i>
+            Never put private API keys, signing keys, passwords, or server secrets in frontend JavaScript or a public GitHub repository. Validate credentials on the server.
+          </div>
+        </section>
+
+        <section class="api-section" id="endpoints">
+          <h2>Endpoints</h2>
+          <p>The routes below are sample designs for future API implementation, not verified live endpoints.</p>
+
+          <div class="api-endpoint">
+            <div class="endpoint-top">
+              <span class="method get">GET</span>
+              <code>/health</code>
+              <span class="api-tag">PUBLIC EXAMPLE</span>
+            </div>
+            <p class="endpoint-description">Example health-check route. A real backend could use it to report service availability.</p>
+          </div>
+
+          <div class="api-endpoint">
+            <div class="endpoint-top">
+              <span class="method post">POST</span>
+              <code>/hash</code>
+              <span class="api-tag">EXAMPLE</span>
+            </div>
+            <p class="endpoint-description">Illustrative hashing route accepting text and a supported algorithm. No real hashing request is sent by this page.</p>
+          </div>
+
+          <div class="api-endpoint">
+            <div class="endpoint-top">
+              <span class="method post">POST</span>
+              <code>/encrypt</code>
+              <span class="api-tag">EXAMPLE</span>
+            </div>
+            <p class="endpoint-description">Illustrative encryption route. Actual encryption requires a defined algorithm, key-handling design, nonce/IV rules, and validated input schema.</p>
+          </div>
+
+          <div class="api-endpoint">
+            <div class="endpoint-top">
+              <span class="method post">POST</span>
+              <code>/verify-signature</code>
+              <span class="api-tag">EXAMPLE</span>
+            </div>
+            <p class="endpoint-description">Illustrative digital-signature verification route. Its accepted signature format and public-key encoding must be defined by the backend.</p>
+          </div>
+        </section>
+
+        <section class="api-section" id="example-request">
+          <h2>Example Request</h2>
+          <p>Example JSON payload for a hypothetical hashing endpoint. This snippet is documentation only and is not submitted to a server.</p>
+
+          <div class="api-code">
+            <div class="api-code-head">
+              <span><i class="fa-brands fa-js"></i> JSON payload</span>
+              <button class="copy-button" data-copy='{ "text": "example text", "algorithm": "SHA-256" }' type="button">Copy</button>
+            </div>
+            <pre><code>{
+  <span class="code-purple">"text"</span>: <span class="code-green">"example text"</span>,
+  <span class="code-purple">"algorithm"</span>: <span class="code-green">"SHA-256"</span>
+}</code></pre>
+          </div>
+
+          <h3>Example cURL command</h3>
+          <div class="api-code">
+            <div class="api-code-head">
+              <span>Terminal</span>
+              <button class="copy-button" data-copy='curl -X POST https://api.example.com/v1/hash -H "Content-Type: application/json" -d "{\"text\":\"example text\",\"algorithm\":\"SHA-256\"}"' type="button">Copy</button>
+            </div>
+            <pre><code>curl -X POST https://api.example.com/v1/hash \
+  -H "Content-Type: application/json" \
+  -d '{"text":"example text","algorithm":"SHA-256"}'</code></pre>
+          </div>
+        </section>
+
+        <section class="api-section" id="responses">
+          <h2>Response Format</h2>
+          <p>A real API should return a documented response schema. This is a hypothetical success response for the example hash endpoint.</p>
+
+          <div class="api-code">
+            <div class="api-code-head">
+              <span>Example JSON response</span>
+              <button class="copy-button" data-copy='{ "success": true, "data": { "algorithm": "SHA-256", "hash": "EXAMPLE_HASH_VALUE" } }' type="button">Copy</button>
+            </div>
+            <pre><code>{
+  <span class="code-purple">"success"</span>: <span class="code-orange">true</span>,
+  <span class="code-purple">"data"</span>: {
+    <span class="code-purple">"algorithm"</span>: <span class="code-green">"SHA-256"</span>,
+    <span class="code-purple">"hash"</span>: <span class="code-green">"EXAMPLE_HASH_VALUE"</span>
+  }
+}</code></pre>
+          </div>
+          <p>The hash value above is a placeholder, not the output of an actual calculation.</p>
+        </section>
+
+        <section class="api-section" id="errors">
+          <h2>HTTP Status Codes</h2>
+          <p>These are standard HTTP status codes commonly used by APIs. Which codes CryptoKit returns will depend on its implementation.</p>
+
+          <div class="api-table-wrap">
+            <table class="api-table">
+              <thead>
+                <tr><th>Code</th><th>Meaning</th><th>Typical use</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="api-status success">200</span></td><td>OK</td><td>Request completed successfully.</td></tr>
+                <tr><td><span class="api-status success">201</span></td><td>Created</td><td>A resource was created.</td></tr>
+                <tr><td><span class="api-status warning">400</span></td><td>Bad Request</td><td>Invalid request format or input.</td></tr>
+                <tr><td><span class="api-status warning">401</span></td><td>Unauthorized</td><td>Missing or invalid authentication.</td></tr>
+                <tr><td><span class="api-status warning">403</span></td><td>Forbidden</td><td>The client is not allowed to perform the action.</td></tr>
+                <tr><td><span class="api-status warning">404</span></td><td>Not Found</td><td>Route or resource does not exist.</td></tr>
+                <tr><td><span class="api-status error">429</span></td><td>Too Many Requests</td><td>Rate limit exceeded.</td></tr>
+                <tr><td><span class="api-status error">500</span></td><td>Internal Server Error</td><td>Unexpected server failure.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="api-section" id="rate-limits">
+          <h2>Rate Limits</h2>
+          <p>Rate limits help protect an API from excessive traffic and abuse. Configure actual limits on the backend and publish the correct values here before making this API publicly available.</p>
+          <div class="api-bottom-note">
+            <i class="fa-solid fa-circle-info"></i>
+            No request quota, requests-per-minute value, or rate-limit header is configured by this documentation page.
+          </div>
+        </section>
+
+        <section class="api-section" id="security">
+          <h2>Security Best Practices</h2>
+          <ul style="padding-left:22px;line-height:2;font-size:14px">
+            <li>Use HTTPS for requests containing sensitive information.</li>
+            <li>Keep private keys and server credentials on the backend.</li>
+            <li>Validate request bodies, input sizes, and supported algorithms.</li>
+            <li>Apply authentication and rate limiting where appropriate.</li>
+            <li>Do not log passwords, private keys, or sensitive cryptographic material.</li>
+            <li>Use established cryptographic libraries and authenticated encryption schemes rather than custom cryptography.</li>
+          </ul>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="ck-footer">
+    <div class="ck-footer-grid">
+
+      <div class="ck-footer-brand">
+        <a href="index.html" aria-label="CryptoKit Home">
+          <span class="ck-logo"><i class="fa-solid fa-shield-halved"></i></span>
+          <span class="ck-brand-name">CryptoKit</span>
+        </a>
+        <p class="ck-footer-description">
+          Advanced cryptography tools for developers and security professionals.
+        </p>
+        <div class="ck-socials">
+          <a href="https://github.com/CryptoKit-Team/OurCryptoKit" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
+        </div>
+      </div>
+
+      <div class="ck-footer-column">
+        <h3>Legal</h3>
+        <a href="Privacy Policy.html">Privacy Policy</a>
+        <a href="Terms.html">Terms of Service</a>
+        <a href="cookie-policy.html">Cookie Policy</a>
+        <a href="dmca.html">DMCA</a>
+      </div>
+
+      <div class="ck-footer-column">
+        <h3>Support</h3>
+        <a href="Support.html">Help Center</a>
+        <a href="Support.html">Contact Us</a>
+        <a href="api-reference.html" aria-current="page">API Reference</a>
+        <a href="system-status.html">System Status</a>
+      </div>
+
+      <div class="ck-footer-column">
+        <h3>Connect</h3>
+        <a href="https://github.com/CryptoKit-Team/OurCryptoKit" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+
+    </div>
+
+    <div class="ck-footer-bottom">
+      <span>© <span id="currentYear">2026</span> CryptoKit. All rights reserved.</span>
+      <div class="ck-footer-bottom-links">
+        <a href="Privacy Policy.html">Privacy</a>
+        <a href="Terms.html">Terms</a>
+        <a href="cookie-policy.html">Cookies</a>
+      </div>
+    </div>
+  </footer>
+
+  <button class="ck-top" id="backToTop" type="button" aria-label="Back to top" title="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
+  <script>
+    // Theme dropdown
+    const themeButton = document.getElementById('themeButton');
+    const themeMenu = document.getElementById('themeMenu');
+    const themeLabel = document.getElementById('themeLabel');
+
+    themeButton.addEventListener('click', () => {
+      const open = themeMenu.classList.toggle('open');
+      themeButton.setAttribute('aria-expanded', String(open));
+    });
+
+    themeMenu.querySelectorAll('[data-theme]').forEach(button => {
+      button.addEventListener('click', () => {
+        const selectedTheme = button.dataset.theme;
+        document.body.classList.toggle('hacker-theme', selectedTheme === 'hacker');
+        themeLabel.textContent = selectedTheme === 'hacker' ? 'Hacker' : 'Normal';
+        themeMenu.classList.remove('open');
+        themeButton.setAttribute('aria-expanded', 'false');
+
+        try {
+          localStorage.setItem('cryptokit-page-theme', selectedTheme);
+        } catch (error) {}
+      });
+    });
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.ck-theme-wrap')) {
+        themeMenu.classList.remove('open');
+        themeButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    try {
+      if (localStorage.getItem('cryptokit-page-theme') === 'hacker') {
+        document.body.classList.add('hacker-theme');
+        themeLabel.textContent = 'Hacker';
+      }
+    } catch (error) {}
+
+    // Copy buttons
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const text = button.dataset.copy;
+        const original = button.innerHTML;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          button.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        } catch (error) {
+          const area = document.createElement('textarea');
+          area.value = text;
+          area.style.position = 'fixed';
+          area.style.opacity = '0';
+          document.body.appendChild(area);
+          area.select();
+
+          try {
+            const copied = document.execCommand('copy');
+            button.textContent = copied ? 'Copied!' : 'Copy manually';
+          } catch (copyError) {
+            button.textContent = 'Copy manually';
+          }
+
+          area.remove();
+        }
+
+        setTimeout(() => { button.innerHTML = original; }, 1600);
+      });
+    });
+
+    // Highlight selected documentation section in sidebar
+    const sideLinks = document.querySelectorAll('.api-sidebar a');
+    const sections = document.querySelectorAll('.api-section');
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            sideLinks.forEach(link => {
+              link.classList.toggle(
+                'active',
+                link.getAttribute('href') === '#' + entry.target.id
+              );
+            });
+          }
+        });
+      }, { rootMargin: '-20% 0px -65% 0px' });
+
+      sections.forEach(section => observer.observe(section));
+    }
+
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    document.getElementById('backToTop').addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="normal">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limitations - CryptoKit Docs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="docs-style.css">
+</head>
+<body>
+    <nav class="docs-navbar">
+    <div class="docs-nav-left">
+        <a href="index.html" class="docs-logo">
+            <div class="docs-logo-icon" style="background: transparent; background-color: transparent; border: none; box-shadow: none;">
+                <svg viewBox="0 0 100 100"
+                     width="28" height="28"
+                     fill="none"
+                     xmlns="http://www.w3.org/2000/svg"
+                     aria-hidden="true">
+                    <defs>
+                        <linearGradient id="cryptoBlueDocsLatest"
+                            x1="10" y1="10" x2="90" y2="90"
+                            gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#2563EB"/>
+                            <stop offset="50%" stop-color="#0EA5E9"/>
+                            <stop offset="100%" stop-color="#38BDF8"/>
+                        </linearGradient>
+                    </defs>
+
+                    <path d="M66 16 H38 L15 32 V68 L38 84 H66"
+                          stroke="url(#cryptoBlueDocsLatest)"
+                          stroke-width="9"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"/>
+
+                    <circle cx="43" cy="39" r="7"
+                            fill="url(#cryptoBlueDocsLatest)"/>
+
+                    <path d="M39 48 L35 70 Q35 73 39 73 H48 Q52 73 51 70 L47 48 Z"
+                          fill="url(#cryptoBlueDocsLatest)"/>
+
+                    <g stroke="url(#cryptoBlueDocsLatest)"
+                       stroke-width="4"
+                       stroke-linecap="round"
+                       stroke-linejoin="round">
+                        <path d="M57 37 H69 L78 29 H86"/>
+                        <path d="M57 50 H86"/>
+                        <path d="M57 63 H69 L78 71 H86"/>
+                    </g>
+
+                    <g fill="none" stroke="#38BDF8" stroke-width="3.5">
+                        <circle cx="88" cy="29" r="5"/>
+                        <circle cx="88" cy="50" r="5"/>
+                        <circle cx="88" cy="71" r="5"/>
+                    </g>
+                </svg>
+            </div>
+            <span>CryptoKit Docs</span>
+        </a>
+    </div>
+    <div class="docs-nav-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="docsSearch" placeholder="Search documentation..." autocomplete="off">
+        <kbd>Ctrl K</kbd>
+        <div class="search-results" id="searchResults"></div>
+    </div>
+    <div class="docs-nav-right">
+        <a href="index.html" class="nav-home-btn"><i class="fas fa-home"></i> Home</a>
+        <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+        <a href="https://github.com" class="github-btn" target="_blank"><i class="fab fa-github"></i></a>
+    </div>
+</nav>
+
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+
+    <div class="docs-layout">
+        <aside class="docs-sidebar">
+            <div class="sidebar-section">
+                <h3>Introduction</h3>
+                <ul>
+                    <li><a href="documentation.html"><i class="fas fa-book-open"></i> Overview</a></li>
+                    <li><a href="getting-started.html"><i class="fas fa-rocket"></i> Getting Started</a></li>
+                    <li><a href="core-concepts.html"><i class="fas fa-brain"></i> Core Concepts</a></li>
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3>Tools</h3>
+                <ul>
+                    <li><a href="tool-docs.html"><i class="fas fa-tools"></i> Tool Documentation</a></li>
+                    <li><a href="algorithm-reference.html"><i class="fas fa-table"></i> Algorithm Reference</a></li>
+                    <li><a href="terminal-docs.html"><i class="fas fa-terminal"></i> Terminal Mode</a></li>
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3>Guides</h3>
+                <ul>
+                    <li><a href="security-practices.html"><i class="fas fa-shield-alt"></i> Security Practices</a></li>
+                    <li><a href="code-examples.html"><i class="fas fa-code"></i> Code Examples</a></li>
+                </ul>
+            </div>
+            <div class="sidebar-section">
+                <h3>Reference</h3>
+                <ul>
+                    <li><a href="faq.html"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                    <li><a href="glossary.html"><i class="fas fa-list"></i> Glossary</a></li>
+                    <li><a href="limitations.html"><i class="fas fa-exclamation-triangle"></i> Limitations</a></li>
+                    <li><a href="changelog.html"><i class="fas fa-history"></i> Changelog</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="docs-main">
+            <div class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> Home</a>
+                <span>/</span>
+                <a href="documentation.html">Docs</a>
+                <span>/</span>
+                <span>Limitations</span>
+            </div>
+
+            <div class="docs-hero">
+                <div class="docs-badge">⚠️ Warnings</div>
+                <h1>Known <span class="gradient-text">Limitations</span></h1>
+                <p>Important limitations and warnings to be aware of when using CryptoKit.</p>
+            </div>
+
+            <div class="toc">
+                <div class="toc-title">📑 On This Page</div>
+                <ul id="tocList"></ul>
+            </div>
+
+            <div class="docs-section">
+                <h2 id="browser-limits">Browser API Limitations</h2>
+                <p>CryptoKit relies on the Web Crypto API, which has some inherent limitations:</p>
+                <ul>
+                    <li>Not all algorithms are supported in all browsers</li>
+                    <li>Requires HTTPS or localhost to function</li>
+                    <li>Some operations are async-only</li>
+                    <li>No direct access to hardware security modules</li>
+                </ul>
+
+                <h2 id="file-limits">File Size Limits</h2>
+                <p>Browser memory constrains file operations:</p>
+                <table class="docs-table">
+                    <thead>
+                        <tr><th>Operation</th><th>Recommended Max</th><th>Absolute Max</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Hash generation</td><td>100 MB</td><td>500 MB</td></tr>
+                        <tr><td>Encryption</td><td>50 MB</td><td>200 MB</td></tr>
+                        <tr><td>Signing</td><td>20 MB</td><td>100 MB</td></tr>
+                    </tbody>
+                </table>
+
+                <h2 id="not-suitable">Not Suitable For</h2>
+                <div class="callout danger">
+                    <div class="callout-icon">🚫</div>
+                    <div class="callout-body">
+                        <div class="callout-title">Do Not Use For</div>
+                        <ul>
+                            <li>Military or government-grade classified data</li>
+                            <li>Life-critical medical systems</li>
+                            <li>Financial systems requiring FIPS compliance</li>
+                            <li>Applications requiring audited implementations</li>
+                            <li>Long-term storage without additional security layers</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h2 id="unsupported">Unsupported Algorithms</h2>
+                <p>The following algorithms are NOT available:</p>
+                <ul>
+                    <li>Post-quantum algorithms (coming soon)</li>
+                    <li>Homomorphic encryption</li>
+                    <li>Zero-knowledge proofs</li>
+                    <li>Custom or proprietary algorithms</li>
+                    <li>Quantum key distribution</li>
+                </ul>
+
+                <h2 id="professional">Professional Audits Recommended</h2>
+                <div class="callout warning">
+                    <div class="callout-icon">⚠️</div>
+                    <div class="callout-body">
+                        <div class="callout-title">Important</div>
+                        For any critical application, we strongly recommend hiring professional cryptography auditors and using certified libraries.
+                    </div>
+                </div>
+
+                <h2 id="disclaimer">Disclaimer</h2>
+                <p>CryptoKit is provided "AS IS" without warranty of any kind. While we strive for correctness, the authors are not responsible for any damages resulting from the use of this software. Always test thoroughly before production use.</p>
+            </div>
+
+            <div class="feedback-box">
+                <h3>Was this page helpful?</h3>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn" onclick="submitFeedback('yes')"><i class="fas fa-thumbs-up"></i> Yes</button>
+                    <button class="feedback-btn" onclick="submitFeedback('no')"><i class="fas fa-thumbs-down"></i> No</button>
+                </div>
+            </div>
+
+            <div class="docs-footer-nav">
+                <a href="glossary.html" class="nav-prev">
+                    <span class="nav-label">← Previous</span>
+                    <span class="nav-title">Glossary</span>
+                </a>
+                <a href="changelog.html" class="nav-next">
+                    <span class="nav-label">Next →</span>
+                    <span class="nav-title">Changelog</span>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <button class="scroll-top" id="scrollTop"><i class="fas fa-chevron-up"></i></button>
+    <script src="docs-script.js"></script>
+</body>
+</html>

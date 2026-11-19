@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#030503">
+  <title>System Status | CryptoKit</title>
+  <meta name="description" content="View CryptoKit service status, component availability, and incident updates.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* ============ HACKER THEME TOKENS ============ */
+    [data-theme="hacker"] {
+      --primary: #00ff41;
+      --secondary: #39ff14;
+      --accent: #00ffff;
+      --success: #00ff41;
+      --warning: #ffb000;
+      --danger: #ff0040;
+      --green-dark: #003b00;
+      --green-mid: #008f11;
+      --green-bright: #00ff41;
+      --green-glow: #39ff14;
+      --accent-red: #ff0040;
+      --accent-amber: #ffb000;
+      --accent-cyan: #00ffff;
+      --accent-magenta: #ff00ff;
+      --accent-yellow: #ffff00;
+      --accent-purple: #bf00ff;
+      --accent-orange: #ff8c00;
+      --hacker-bg: #030503;
+      --hacker-panel: #0A140A;
+      --hacker-terminal: #0D1B0D;
+      --bg: var(--hacker-bg);
+      --bg-alt: #050a05;
+      --panel: rgba(0,255,65,0.03);
+      --panel-solid: var(--hacker-panel);
+      --text: #c8ffd4;
+      --text-dim: #6bbf7a;
+      --border: rgba(0,255,65,0.2);
+      --glass: rgba(0,255,65,0.04);
+      --shadow: 0 20px 60px rgba(0,255,65,0.1);
+      --scrollbar-track: var(--hacker-bg);
+      --scrollbar-thumb: var(--green-bright);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 100px;
+    }
+
+    body {
+      font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    [data-theme="hacker"] body,
+    [data-theme="hacker"] p,
+    [data-theme="hacker"] span,
+    [data-theme="hacker"] a,
+    [data-theme="hacker"] li,
+    [data-theme="hacker"] button,
+    [data-theme="hacker"] input,
+    [data-theme="hacker"] textarea,
+    [data-theme="hacker"] select,
+    [data-theme="hacker"] label,
+    [data-theme="hacker"] td,
+    [data-theme="hacker"] th {
+      font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+    }
+
+    a, button, input {
+      outline: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+    /* ============ MATRIX CANVAS ============ */
+    #matrix-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.15;
+      pointer-events: none;
+      display: none;
+    }
+    [data-theme="hacker"] #matrix-canvas { display: block; }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, rgba(0,255,65,0.03) 0, rgba(0,255,65,0.03) 1px, transparent 1px, transparent 3px);
+      display: none;
+    }
+    [data-theme="hacker"] .scanlines { display: block; }
+
+    /* ============ BG SHAPES ============ */
+    .bg-shapes {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .bg-shape-1, .bg-shape-2, .bg-shape-3 {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.3;
+    }
+    .bg-shape-1 {
+      width: 400px; height: 400px;
+      background: var(--primary);
+      top: -100px; left: -100px;
+      animation: floatShape 8s ease-in-out infinite;
+    }
+    .bg-shape-2 {
+      width: 350px; height: 350px;
+      background: var(--secondary);
+      top: 40%; right: -100px;
+      animation: floatShape 10s ease-in-out infinite reverse;
+    }
+    .bg-shape-3 {
+      width: 300px; height: 300px;
+      background: var(--accent);
+      bottom: -50px; left: 30%;
+      animation: floatShape 6s ease-in-out infinite;
+    }
+    @keyframes floatShape {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50% { transform: translate(30px,-30px) scale(1.1); }
+    }
+
+    /* ============ GLITCH EFFECT ============ */
+    .glitch {
+      position: relative;
+      display: inline-block;
+    }
+    [data-theme="hacker"] .glitch::before,
+    [data-theme="hacker"] .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      background: transparent;
+      -webkit-background-clip: initial;
+      background-clip: initial;
+      -webkit-text-fill-color: initial;
+    }
+    [data-theme="hacker"] .glitch::before {
+      left: 2px;
+      text-shadow: -2px 0 var(--accent-red);
+      animation: glitch-anim-1 2s infinite linear alternate-reverse;
+      color: var(--accent-cyan);
+    }
+    [data-theme="hacker"] .glitch::after {
+      left: -2px;
+      text-shadow: -2px 0 var(--accent-magenta);
+      animation: glitch-anim-2 3s infinite linear alternate-reverse;
+      color: var(--green-bright);
+    }
+    @keyframes glitch-anim-1 {
+      0%,100% { clip-path: inset(0 0 95% 0); }
+      20% { clip-path: inset(30% 0 50% 0); }
+      40% { clip-path: inset(60% 0 10% 0); }
+      60% { clip-path: inset(20% 0 70% 0); }
+      80% { clip-path: inset(80% 0 2% 0); }
+    }
+    @keyframes glitch-anim-2 {
+      0%,100% { clip-path: inset(90% 0 3% 0); }
+      20% { clip-path: inset(10% 0 80% 0); }
+      40% { clip-path: inset(50% 0 30% 0); }
+      60% { clip-path: inset(70% 0 15% 0); }
+      80% { clip-path: inset(5% 0 85% 0); }
+    }
+
+    @keyframes borderPulse {
+      0%,100% { border-color: var(--border); }
+      50% { border-color: var(--primary); box-shadow: 0 0 20px rgba(0,255,65,0.2); }
+    }
+
+    /* ============ NAVBAR ============ */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: rgba(10,14,39,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      transition: background 0.5s ease;
+    }
+    [data-theme="hacker"] .navbar {
+      background: rgba(3,5,3,0.9);
+      border-bottom-color: var(--border);
+    }
+    .nav-container {
+      max-width: 1400px;
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+    .nav-logo-text {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    [data-theme="hacker"] .nav-logo-text {
+      background: linear-gradient(135deg, var(--green-bright), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+      align-items: center;
+    }
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+    .nav-links a:hover,
+    .nav-links a[aria-current="page"] { color: var(--text); }
+    .nav-links a[aria-current="page"]::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 2px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .hamburger span {
+      width: 25px;
+      height: 2px;
+      background: var(--text);
+      transition: all 0.3s ease;
+    }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background: var(--panel-solid);
+      border-bottom: 1px solid var(--border);
+      padding: 20px;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 999;
+    }
+    .mobile-menu.active { display: flex; }
+    .mobile-menu a {
+      color: var(--text);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background 0.2s ease;
+    }
+    .mobile-menu a:hover { background: var(--glass); }
+
+    /* ============ PAGE HERO ============ */
+    .page-hero {
+      padding: 150px 40px 60px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .page-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    [data-theme="hacker"] .gradient-text {
+      background: linear-gradient(135deg, var(--green-bright), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 700px;
+      margin: 0 auto 25px;
+      line-height: 1.7;
+    }
+    .last-updated {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      padding: 8px 14px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    [data-theme="hacker"] .last-updated {
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* ============ CONTENT ============ */
+    .content-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 40px 100px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .policy-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 28px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    .policy-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    [data-theme="hacker"] .policy-card {
+      animation: borderPulse 3s ease-in-out infinite;
+    }
+    [data-theme="hacker"] .policy-card:hover {
+      animation: none;
+    }
+
+    .policy-card h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.6rem;
+      margin-bottom: 10px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    [data-theme="hacker"] .policy-card h2 {
+      color: var(--green-bright);
+      text-shadow: 0 0 10px rgba(0,255,65,0.3);
+    }
+    .policy-card > p {
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      line-height: 1.75;
+    }
+    [data-theme="hacker"] .policy-card > p {
+      color: var(--text);
+    }
+
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    [data-theme="hacker"] .section-number {
+      background: var(--green-bright);
+      color: var(--hacker-bg);
+    }
+
+    .section-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    /* ============ STATUS BADGE ============ */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 100px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: var(--success);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    [data-theme="hacker"] .status-badge {
+      background: rgba(0,255,65,0.1);
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .overall-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .overall-left {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .overall-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(16,185,129,0.15);
+      color: var(--success);
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    [data-theme="hacker"] .overall-icon {
+      background: rgba(0,255,65,0.1);
+      color: var(--green-bright);
+    }
+    .overall-card h2 {
+      font-size: 1.4rem;
+      margin: 0 0 6px;
+    }
+    .overall-card .overall-desc {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text-dim);
+    }
+
+    /* ============ COMPONENT LIST ============ */
+    .component-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .component-row {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--glass);
+      transition: background 0.2s ease;
+    }
+    .component-row:last-child { border-bottom: 0; }
+    .component-row:hover { background: var(--panel); }
+
+    .component-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .component-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: rgba(99,102,241,0.15);
+      color: var(--primary);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    [data-theme="hacker"] .component-icon {
+      background: rgba(0,255,65,0.1);
+      color: var(--green-bright);
+    }
+    .component-info h3 {
+      margin: 0 0 4px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .component-info p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .component-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--success);
+      white-space: nowrap;
+    }
+    [data-theme="hacker"] .component-state { color: var(--green-bright); }
+
+    .state-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    /* ============ INFO / WARNING BOXES ============ */
+    .highlight-box, .warning-box, .info-box {
+      padding: 16px 18px;
+      border-radius: 12px;
+      margin-top: 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+    .highlight-box {
+      background: rgba(99,102,241,0.1);
+      border-left: 3px solid var(--primary);
+      color: var(--text);
+    }
+    .warning-box {
+      background: rgba(245,158,11,0.1);
+      border-left: 3px solid var(--warning);
+      color: var(--text);
+    }
+    .info-box {
+      background: rgba(6,182,212,0.1);
+      border-left: 3px solid var(--accent);
+      color: var(--text);
+    }
+    [data-theme="hacker"] .highlight-box {
+      background: rgba(0,255,65,0.05);
+      border-left-color: var(--green-bright);
+    }
+    [data-theme="hacker"] .warning-box {
+      background: rgba(255,176,0,0.05);
+      border-left-color: var(--accent-amber);
+    }
+    [data-theme="hacker"] .info-box {
+      background: rgba(0,255,255,0.05);
+      border-left-color: var(--accent-cyan);
+    }
+
+    .code-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      padding: 2px 6px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--primary);
+    }
+    [data-theme="hacker"] .code-text {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--green-bright);
+    }
+
+    .refresh-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .refresh-button:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .refresh-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ============ UPTIME ============ */
+    .uptime-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .uptime-top h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+    .uptime-top .uptime-desc {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+    .uptime-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--success);
+      white-space: nowrap;
+    }
+    [data-theme="hacker"] .uptime-number {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--green-bright);
+    }
+    .uptime-bars {
+      display: grid;
+      grid-template-columns: repeat(60, minmax(2px, 1fr));
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+    .uptime-bar {
+      height: 32px;
+      border-radius: 3px;
+      background: var(--success);
+      opacity: 0.75;
+      transition: opacity 0.2s ease;
+    }
+    [data-theme="hacker"] .uptime-bar {
+      background: var(--green-bright);
+      box-shadow: 0 0 4px var(--green-bright);
+    }
+    .uptime-bar:hover { opacity: 1; }
+    .uptime-legend {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    /* ============ INCIDENT ============ */
+    .incident-empty {
+      text-align: center;
+      padding: 20px;
+    }
+    .incident-icon-big {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(16,185,129,0.15);
+      color: var(--success);
+      font-size: 1.6rem;
+      margin: 0 auto 16px;
+    }
+    [data-theme="hacker"] .incident-icon-big {
+      background: rgba(0,255,65,0.1);
+      color: var(--green-bright);
+    }
+    .incident-empty h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .incident-empty p {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ============ FOOTER ============ */
+    footer {
+      background: var(--panel-solid);
+      border-top: 1px solid var(--border);
+      padding: 60px 40px 30px;
+      position: relative;
+      z-index: 2;
+    }
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 40px;
+    }
+    .footer-brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--text);
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+    .footer-brand p {
+      color: var(--text-dim);
+      line-height: 1.7;
+      max-width: 350px;
+      margin-bottom: 20px;
+    }
+    .social-links { display: flex; gap: 12px; }
+    .social-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .social-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-3px);
+    }
+    .footer-col h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .footer-col a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+    }
+    .footer-col a:hover { color: var(--primary); }
+    .footer-bottom {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding-top: 30px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* ============ SCROLL TOP ============ */
+    .scroll-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+    .scroll-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    .scroll-top:hover { transform: translateY(-3px); }
+    [data-theme="hacker"] .scroll-top {
+      background: var(--green-bright);
+      color: var(--hacker-bg);
+      box-shadow: 0 0 15px rgba(0,255,65,0.5);
+    }
+
+    /* ============ HACKER OVERRIDES ============ */
+    [data-theme="hacker"] body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,65,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,65,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 0;
+      animation: hk-grid-move 20s linear infinite;
+    }
+    @keyframes hk-grid-move {
+      0% { background-position: 0 0; }
+      100% { background-position: 50px 50px; }
+    }
+    [data-theme="hacker"] .section-badge {
+      background: rgba(0,255,65,0.05);
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+    }
+    [data-theme="hacker"] .mode-btn {
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+    }
+    [data-theme="hacker"] footer {
+      background: var(--hacker-panel);
+    }
+
+    /* ============ REDUCED MOTION ============ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 768px) {
+      .nav-container { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .page-hero { padding: 120px 20px 40px; }
+      .content-wrapper { padding: 20px 20px 60px; }
+      .policy-card { padding: 24px; }
+      .policy-card h2 { font-size: 1.3rem; }
+      .footer-content { grid-template-columns: 1fr; gap: 40px; }
+      .overall-card { flex-direction: column; align-items: flex-start; }
+      .component-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .uptime-bars { grid-template-columns: repeat(30, minmax(2px, 1fr)); gap: 3px; }
+      .uptime-bar { height: 26px; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-container { padding: 0 15px; }
+      .page-title { font-size: 2rem; }
+      .page-subtitle { font-size: 1rem; }
+      .policy-card { padding: 18px; }
+      .policy-card h2 { font-size: 1.15rem; }
+      .section-number { width: 36px; height: 36px; font-size: 0.9rem; }
+      .component-row { padding: 14px; }
+      .uptime-bars { grid-template-columns: repeat(20, minmax(2px, 1fr)); }
+      .uptime-bar { height: 22px; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body data-theme="hacker">
+
+  <!-- MATRIX / SCANLINES / BG -->
+  <canvas id="matrix-canvas" aria-hidden="true"></canvas>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="bg-shapes" aria-hidden="true">
+    <div class="bg-shape-1"></div>
+    <div class="bg-shape-2"></div>
+    <div class="bg-shape-3"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" aria-label="Main navigation">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo" aria-label="CryptoKit Home">
+        <span class="nav-logo-icon" aria-hidden="true" style="background: transparent; background-color: transparent; border: none; box-shadow: none;">
+          <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cryptoBlueMainNav"
+                x1="10" y1="10" x2="90" y2="90"
+                gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00ff41"/>
+                <stop offset="50%" stop-color="#00cc66"/>
+                <stop offset="100%" stop-color="#00ffff"/>
+              </linearGradient>
+            </defs>
+
+            <path d="M66 16 H38 L15 32 V68 L38 84 H66"
+              stroke="url(#cryptoBlueMainNav)"
+              stroke-width="9"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+
+            <circle cx="43" cy="39" r="7"
+              fill="url(#cryptoBlueMainNav)"/>
+
+            <path d="M39 48 L35 70 Q35 73 39 73 H48 Q52 73 51 70 L47 48 Z"
+              fill="url(#cryptoBlueMainNav)"/>
+
+            <g stroke="url(#cryptoBlueMainNav)"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M57 37 H69 L78 29 H86"/>
+              <path d="M57 50 H86"/>
+              <path d="M57 63 H69 L78 71 H86"/>
+            </g>
+
+            <g fill="none" stroke="#00ffff" stroke-width="3.5">
+              <circle cx="88" cy="29" r="5"/>
+              <circle cx="88" cy="50" r="5"/>
+              <circle cx="88" cy="71" r="5"/>
+            </g>
+          </svg>
+        </span>
+        <span class="nav-logo-text">CryptoKit</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="Privacy Policy.html">Privacy</a></li>
+        <li><a href="terms.html">Terms</a></li>
+        <li><a href="Support.html">Support</a></li>
+        <li><a href="cookie-policy.html">Cookies</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobileMenu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+</nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html" onclick="closeMobileMenu()">Home</a>
+    <a href="Privacy Policy.html" onclick="closeMobileMenu()">Privacy</a>
+    <a href="terms.html" onclick="closeMobileMenu()">Terms</a>
+    <a href="Support.html" onclick="closeMobileMenu()">Support</a>
+    <a href="cookie-policy.html" onclick="closeMobileMenu()">Cookies</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="section-badge">
+      <i class="fas fa-satellite-dish" aria-hidden="true"></i>
+      <span>SYSTEM MONITORING</span>
+    </div>
+    <h1 class="page-title">
+      <span class="gradient-text glitch" data-text="System Status">System Status</span>
+    </h1>
+    <p class="page-subtitle">
+      Check the status of CryptoKit services and explore service updates in one place.
+    </p>
+    <div class="last-updated">
+      <i class="fas fa-clock" aria-hidden="true"></i>
+      <span>Last refresh:</span>
+      <span id="lastUpdated">Loading...</span>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="content-wrapper">
+
+    <!-- OVERALL -->
+    <div class="policy-card" aria-live="polite">
+      <div class="overall-card">
+        <div class="overall-left">
+          <div class="overall-icon" aria-hidden="true"><i class="fas fa-check"></i></div>
+          <div>
+            <h2>Service Status Overview</h2>
+            <p class="overall-desc" id="overallDescription">
+              Demo status indicators are displayed below. Live monitoring is not currently connected.
+            </p>
+          </div>
+        </div>
+        <span class="status-badge">
+          <span class="status-dot" aria-hidden="true"></span>
+          DEMO STATUS
+        </span>
+      </div>
+    </div>
+
+    <!-- COMPONENTS -->
+    <div class="policy-card">
+      <div class="section-heading-row">
+        <h2>
+          <span class="section-number" aria-hidden="true">1</span>
+          Service Components
+        </h2>
+        <button class="refresh-button" id="refreshStatus" type="button" aria-label="Refresh page data">
+          <i class="fas fa-rotate" aria-hidden="true"></i>
+          <span>Refresh</span>
+        </button>
+      </div>
+      <p>Overview of the main areas of the CryptoKit platform.</p>
+
+      <div class="component-list">
+        <div class="component-row">
+          <div class="component-info">
+            <div class="component-icon" aria-hidden="true"><i class="fas fa-globe"></i></div>
+            <div>
+              <h3>Website &amp; Frontend</h3>
+              <p>Pages and user interface</p>
+            </div>
+          </div>
+          <span class="component-state"><span class="state-dot" aria-hidden="true"></span> Demo</span>
+        </div>
+
+        <div class="component-row">
+          <div class="component-info">
+            <div class="component-icon" aria-hidden="true"><i class="fas fa-lock"></i></div>
+            <div>
+              <h3>Cryptography Tools</h3>
+              <p>Encryption and utility interfaces</p>
+            </div>
+          </div>
+          <span class="component-state"><span class="state-dot" aria-hidden="true"></span> Demo</span>
+        </div>
+
+        <div class="component-row">
+          <div class="component-info">
+            <div class="component-icon" aria-hidden="true"><i class="fas fa-key"></i></div>
+            <div>
+              <h3>Authentication</h3>
+              <p>Login and account access</p>
+            </div>
+          </div>
+          <span class="component-state"><span class="state-dot" aria-hidden="true"></span> Demo</span>
+        </div>
+
+        <div class="component-row">
+          <div class="component-info">
+            <div class="component-icon" aria-hidden="true"><i class="fas fa-database"></i></div>
+            <div>
+              <h3>Backend &amp; Database</h3>
+              <p>Application APIs and data services</p>
+            </div>
+          </div>
+          <span class="component-state"><span class="state-dot" aria-hidden="true"></span> Not Verified</span>
+        </div>
+
+        <div class="component-row">
+          <div class="component-info">
+            <div class="component-icon" aria-hidden="true"><i class="fas fa-code"></i></div>
+            <div>
+              <h3>Public API</h3>
+              <p>API endpoints and integrations</p>
+            </div>
+          </div>
+          <span class="component-state"><span class="state-dot" aria-hidden="true"></span> Not Verified</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <i class="fas fa-circle-info" aria-hidden="true"></i>
+        <div>
+          <strong>Demo mode:</strong> these labels are interface placeholders, not confirmed health checks. A component showing <span class="code-text">Demo</span> does not mean its live service has been tested.
+        </div>
+      </div>
+    </div>
+
+    <!-- UPTIME -->
+    <div class="policy-card">
+      <h2>
+        <span class="section-number" aria-hidden="true">2</span>
+        Availability History
+      </h2>
+      <p>Example availability timeline for the status page design.</p>
+
+      <div class="uptime-top">
+        <div>
+          <h3>Website Availability</h3>
+          <p class="uptime-desc">Illustrative timeline — not measured uptime</p>
+        </div>
+        <div class="uptime-number" aria-label="Uptime percentage not available">—</div>
+      </div>
+
+      <div class="uptime-bars" id="uptimeBars" aria-label="Illustrative availability timeline"></div>
+
+      <div class="uptime-legend">
+        <span>60 sample intervals</span>
+        <span>Live metrics unavailable</span>
+      </div>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div class="policy-card">
+      <h2>
+        <span class="section-number" aria-hidden="true">3</span>
+        Incident History
+      </h2>
+      <p>Service announcements and maintenance updates.</p>
+
+      <div class="incident-empty">
+        <div class="incident-icon-big" aria-hidden="true"><i class="fas fa-clipboard-check"></i></div>
+        <h3>No incident records configured</h3>
+        <p>Incident history will appear here when a monitoring or incident-management system is connected.</p>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div class="policy-card">
+      <h2>
+        <span class="section-number" aria-hidden="true">4</span>
+        Scheduled Maintenance
+      </h2>
+      <p>Planned maintenance announcements for upcoming service work.</p>
+
+      <div class="incident-empty">
+        <div class="incident-icon-big" aria-hidden="true"><i class="far fa-calendar"></i></div>
+        <h3>No maintenance scheduled</h3>
+        <p>Scheduled maintenance information will be published here when available.</p>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="policy-card">
+      <h2>
+        <span class="section-number" aria-hidden="true">5</span>
+        Report an Issue
+      </h2>
+      <p>
+        If you're experiencing a service issue not reflected on this page, please contact our support team so we can investigate.
+      </p>
+      <div class="highlight-box">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <div>
+          Email: <span class="code-text">support@cryptokit.com</span><br>
+          Visit the <a href="Support.html" style="color: var(--primary); text-decoration: underline;">Support Center</a> for help articles and contact options.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+ 
+<!-- FOOTER -->
+<footer>
+    <div class="footer-content">
+
+        <!-- Footer Brand -->
+        <div class="footer-brand">
+                <a href="index.html" class="nav-logo">
+                    <div class="nav-logo-icon" style="background: transparent; background-color: transparent; border: none; box-shadow: none;">
+                        <svg viewBox="0 0 100 100"
+                             width="28" height="28"
+                             fill="none"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="cryptoBlueFooter"
+                                    x1="10" y1="10" x2="90" y2="90"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#00ff41"/>
+                                    <stop offset="50%" stop-color="#00cc66"/>
+                                    <stop offset="100%" stop-color="#00ffff"/>
+                                </linearGradient>
+                            </defs>
+
+                            <path d="M66 16 H38 L15 32 V68 L38 84 H66"
+                                  stroke="url(#cryptoBlueFooter)"
+                                  stroke-width="9"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"/>
+
+                            <circle cx="43" cy="39" r="7"
+                                    fill="url(#cryptoBlueFooter)"/>
+
+                            <path d="M39 48 L35 70 Q35 73 39 73 H48 Q52 73 51 70 L47 48 Z"
+                                  fill="url(#cryptoBlueFooter)"/>
+
+                            <g stroke="url(#cryptoBlueFooter)"
+                               stroke-width="4"
+                               stroke-linecap="round"
+                               stroke-linejoin="round">
+                                <path d="M57 37 H69 L78 29 H86"/>
+                                <path d="M57 50 H86"/>
+                                <path d="M57 63 H69 L78 71 H86"/>
+                            </g>
+
+                            <g fill="none" stroke="#00ffff" stroke-width="3.5">
+                                <circle cx="88" cy="29" r="5"/>
+                                <circle cx="88" cy="50" r="5"/>
+                                <circle cx="88" cy="71" r="5"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <span class="nav-logo-text">CryptoKit</span>
+                </a>
+
+            <p>
+                Advanced cryptography tools for developers and security professionals.
+            </p>
+
+            
+        </div>
+
+        <!-- Legal Links -->
+        <div class="footer-col">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="Privacy Policy.html">Privacy Policy</a></li>
+                <li><a href="terms.html">Terms of Service</a></li>
+                <li><a href="cookie-policy.html">Cookie Policy</a></li>
+                <li><a href="dmca.html">DMCA</a></li>
+            </ul>
+        </div>
+
+        <!-- Support Links -->
+        <div class="footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="Support.html">Help Center</a></li>
+                <li><a href="Support.html">Contact Us</a></li>
+                <li><a href="documentation.html">Documentation</a></li>
+            </ul>
+        </div>
+
+        <!-- Connect Links -->
+        <div class="footer-col">
+            <h4>Connect</h4>
+            <ul>
+                <li><a href="https://github.com/CryptoKit-Team/OurCryptoKit"
+                       target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                <li><a href="https://www.linkedin.com/company/cryptokit-official123/"
+                       target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+
+        <p>
+            &copy; <span id="currentYear">2025</span>
+            CryptoKit Inc., Jaipur, Rajasthan, India. All rights reserved.
+        </p>
+
+        <div style="display: flex; gap: 20px;">
+            <a href="Privacy Policy.html"
+               style="color: var(--text-dim); text-decoration: none;">
+                Privacy
+            </a>
+
+            <a href="terms.html"
+               style="color: var(--text-dim); text-decoration: none;">
+                Terms
+            </a>
+
+            <a href="cookie-policy.html"
+               style="color: var(--text-dim); text-decoration: none;">
+                Cookies
+            </a>
+        </div>
+
+    </div>
+</footer>
+
+
+  <!-- SCROLL TOP -->
+  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script>
+    // ===== MATRIX CANVAS =====
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%"\'#&_(),.;:?!\\|{}<>[]^~';
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(3, 5, 3, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ff41';
+      ctx.font = fontSize + 'px monospace';
+      for (let i = 0; i < drops.length; i++) {
+        const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+
+    let matrixInterval = null;
+    function startMatrix() { if (!matrixInterval) matrixInterval = setInterval(drawMatrix, 50); }
+    function stopMatrix() {
+      if (matrixInterval) {
+        clearInterval(matrixInterval);
+        matrixInterval = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array(columns).fill(1);
+    });
+    // ===== PERMANENT HACKER MODE =====
+    startMatrix();
+
+
+    // ===== MOBILE MENU =====
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    function toggleMobileMenu() {
+      const open = mobileMenu.classList.toggle('active');
+      hamburgerBtn.setAttribute('aria-expanded', String(open));
+    }
+    function closeMobileMenu() {
+      mobileMenu.classList.remove('active');
+      hamburgerBtn.setAttribute('aria-expanded', 'false');
+    }
+    hamburgerBtn.addEventListener('click', toggleMobileMenu);
+
+    // ===== SCROLL TOP =====
+    const scrollTopBtn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('visible', window.scrollY > 500);
+    });
+    scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ===== UPTIME BARS =====
+    const uptimeBars = document.getElementById('uptimeBars');
+    for (let i = 0; i < 60; i++) {
+      const bar = document.createElement('span');
+      bar.className = 'uptime-bar';
+      bar.title = 'Sample interval ' + (i + 1) + ' — no live measurement';
+      bar.setAttribute('aria-hidden', 'true');
+      uptimeBars.appendChild(bar);
+    }
+
+    // ===== TIMESTAMP =====
+    function updatePageTimestamp() {
+      document.getElementById('lastUpdated').textContent =
+        new Date().toLocaleString(undefined, {
+          year: 'numeric', month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+    }
+
+    document.getElementById('refreshStatus').addEventListener('click', (e) => {
+      const button = e.currentTarget;
+      const original = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-rotate fa-spin" aria-hidden="true"></i><span>Refreshing...</span>';
+      updatePageTimestamp();
+      setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = original;
+      }, 500);
+    });
+
+    updatePageTimestamp();
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

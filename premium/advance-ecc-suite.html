@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="normal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced ECC Suite — CryptoKit Premium</title>
+<style>
+  /* ---------------- NORMAL THEME ---------------- */
+  [data-theme="normal"]{
+    --bg-0:#eef0fc;
+    --surface:#ffffff;
+    --surface-soft:#f4f5fd;
+    --border:#e1e3f5;
+    --ink:#1c1f37;
+    --ink-soft:#5b5f7e;
+    --ink-faint:#9599b8;
+    --accent-1:#6366f1;
+    --accent-2:#38bdf8;
+    --accent-soft:#eef0fe;
+    --gold-1:#d97706;
+    --gold-2:#f59e0b;
+    --gold-bg:#fef3e2;
+    --gold-border:#fbd999;
+    --good:#1f9d68; --good-bg:#eafaf2;
+    --warn:#b4700a; --warn-bg:#fff6e6;
+    --bad:#d0483f; --bad-bg:#fdeceb;
+    --radius-lg:18px; --radius-md:12px; --radius-sm:8px;
+    --font-display: 'Arial Rounded MT Bold', 'Arial Rounded MT', ui-rounded, 'SF Pro Rounded', 'Baloo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+
+  /* ---------------- HACKER (DARK) THEME ---------------- */
+  [data-theme="hacker"]{
+    --bg-0:#07070f;
+    --surface:#0e0e1c;
+    --surface-soft:#131326;
+    --border:#2b2740;
+    --ink:#f1f1fb;
+    --ink-soft:#b4b6d6;
+    --ink-faint:#6b6e95;
+    --accent-1:#818cf8;
+    --accent-2:#38bdf8;
+    --accent-soft:#1d1a3a;
+    --gold-1:#fbbf24;
+    --gold-2:#f59e0b;
+    --gold-bg:#2a2210;
+    --gold-border:#4d3c14;
+    --good:#34d399; --good-bg:#0d2518;
+    --warn:#fbbf24; --warn-bg:#2a2210;
+    --bad:#f87171; --bad-bg:#2a1414;
+    --radius-lg:18px; --radius-md:12px; --radius-sm:8px;
+    --font-display: 'Arial Rounded MT Bold', 'Arial Rounded MT', ui-rounded, 'SF Pro Rounded', 'Baloo 2', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg-0);
+    color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased;
+    transition:background-color .3s ease, color .3s ease;
+  }
+  [data-theme="normal"] body{
+    background:
+      radial-gradient(1100px 500px at 12% -8%, #f8ecd8 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, #e7f1fb 0%, transparent 55%),
+      var(--bg-0);
+  }
+  [data-theme="hacker"] body{
+    background:
+      radial-gradient(1100px 500px at 12% -8%, rgba(245,158,11,.14) 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(99,102,241,.14) 0%, transparent 55%),
+      var(--bg-0);
+  }
+  .wrap{ max-width:1080px; margin:0 auto; padding:36px 24px 80px; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:34px; flex-wrap:wrap; gap:12px;}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--surface); border:1px solid var(--border);
+    padding:9px 16px; border-radius:999px; font-size:13.5px; color:var(--ink-soft); font-weight:500;
+  }
+  .back-pill{ color:var(--ink); }
+  .lock-pill{ color:var(--accent-1); font-weight:600; }
+  .lock-pill svg{ color:var(--accent-1); }
+  .toggle-pill{ gap:10px; cursor:pointer; user-select:none; transition:background .3s ease; }
+  .switch{ width:34px; height:19px; border-radius:999px; background:#d5d8ee; position:relative; flex-shrink:0; transition:background .3s ease; }
+  .switch::after{ content:''; position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25); transition:left .3s cubic-bezier(.4,0,.2,1); }
+  [data-theme="hacker"] .switch{ background:linear-gradient(90deg, var(--gold-1), var(--gold-2)); }
+  [data-theme="hacker"] .switch::after{ left:17px; }
+
+  .kicker{
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--gold-bg); border:1px solid var(--gold-border);
+    padding:7px 14px; border-radius:999px;
+    font-size:11.5px; letter-spacing:.08em; color:var(--gold-1); font-weight:800;
+    margin-bottom:18px;
+  }
+
+  .hero{ display:flex; gap:20px; align-items:flex-start; margin-bottom:16px; }
+  .hero-icon{
+    width:58px; height:58px; border-radius:16px; flex-shrink:0;
+    background:linear-gradient(135deg, var(--gold-1), var(--gold-2));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 24px -8px rgba(217,119,6,.5);
+  }
+  .hero h1{
+    font-family:var(--font-display); font-weight:800; font-size:34px; line-height:1.15;
+    margin:0 0 10px 0; letter-spacing:-.01em;
+    background:linear-gradient(90deg, var(--gold-1), #ef8f1e);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p{ margin:0; color:var(--ink-soft); font-size:15.5px; line-height:1.55; max-width:660px; }
+
+  .tag-row{ display:flex; gap:10px; flex-wrap:wrap; margin:18px 0 30px 78px; }
+  .tag{
+    font-family:var(--font-mono); font-size:13px; color:#585c7b;
+    background:var(--surface); border:1px solid var(--border);
+    padding:8px 18px; border-radius:999px;
+  }
+  .tag.tag-gold{ color:var(--gold-1); border-color:var(--gold-border); background:var(--gold-bg); font-family:var(--font-body); font-weight:700; }
+
+  .premium-strip{
+    display:flex; align-items:center; gap:8px;
+    background:var(--gold-bg); border:1px solid var(--gold-border); border-radius:var(--radius-md);
+    padding:12px 18px; margin-bottom:20px; font-size:13.5px; color:var(--gold-1); font-weight:700;
+  }
+
+  .tabs{
+    display:flex; background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:6px; gap:4px; margin-bottom:22px; flex-wrap:wrap;
+    box-shadow:0 2px 10px -6px rgba(30,35,80,.08);
+  }
+  .tab{
+    flex:1; min-width:140px; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:12px 14px; border-radius:11px; cursor:pointer;
+    font-size:13.5px; font-weight:600; color:var(--ink-faint);
+    border:none; background:transparent; font-family:var(--font-body);
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab svg{ opacity:.75; }
+  .tab.active{ background:var(--gold-bg); color:var(--gold-1); }
+  .tab.active svg{ opacity:1; }
+  .tab:not(.active):hover{ color:var(--ink-soft); background:var(--surface-soft); }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:32px;
+    box-shadow:0 4px 24px -12px rgba(30,35,80,.10);
+  }
+  .panel + .panel{ margin-top:20px; }
+  .panel-head{ display:flex; align-items:center; gap:9px; margin-bottom:6px; }
+  .panel-head svg{ color:var(--gold-1); flex-shrink:0; }
+  .panel-head h2{ font-size:18px; margin:0; font-weight:700; }
+  .panel-sub{ color:var(--ink-soft); font-size:14px; margin:0 0 20px 0; line-height:1.5; }
+
+  .field{ margin-bottom:18px; }
+  .field label{ display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:600; color:var(--ink); margin-bottom:8px; }
+  .hint{ font-size:12.5px; color:var(--ink-faint); margin-top:6px; }
+  select, input[type=text], input[type=number], textarea{
+    width:100%; padding:11px 13px; border-radius:var(--radius-sm);
+    border:1px solid var(--border); background:var(--surface-soft);
+    font-size:14px; font-family:var(--font-body); color:var(--ink); outline:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  select:focus, input:focus, textarea:focus{ border-color:var(--gold-2); background:var(--surface); }
+  textarea{ font-family:var(--font-mono); font-size:12px; min-height:120px; resize:vertical; }
+
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .field-row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
+  @media(max-width:640px){ .field-row, .field-row3{ grid-template-columns:1fr; } }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 18px; border-radius:var(--radius-sm);
+    font-size:14px; font-weight:600; font-family:var(--font-body);
+    cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    transition:transform .1s ease, background .15s ease;
+  }
+  .btn:hover{ background:var(--surface-soft); }
+  .btn:active{ transform:scale(.98); }
+  .btn-primary{
+    background:linear-gradient(90deg, var(--gold-1), var(--gold-2));
+    border:none; color:#fff; box-shadow:0 8px 20px -8px rgba(217,119,6,.5);
+  }
+  .btn-primary:hover{ filter:brightness(1.05); }
+  .btn-primary:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
+  .btn-ghost{ background:transparent; border:1px dashed var(--border); color:var(--ink-soft); }
+
+  .kv-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:16px; }
+  @media(max-width:640px){ .kv-grid{ grid-template-columns:1fr; } }
+  .kv-card{ border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 16px; background:var(--surface-soft); }
+  .kv-card .k{ font-size:11.5px; color:var(--ink-faint); font-weight:700; letter-spacing:.04em; text-transform:uppercase; margin-bottom:6px; }
+  .kv-card .v{ font-family:var(--font-mono); font-size:13px; color:var(--ink); word-break:break-all; line-height:1.5; }
+  .kv-card .v.big{ font-family:var(--font-display); font-size:20px; font-weight:800; color:var(--gold-1); word-break:normal; }
+
+  .copy-btn{ font-size:11.5px; font-weight:600; color:var(--gold-1); background:none; border:none; cursor:pointer; padding:2px 6px; border-radius:5px; float:right;}
+  .copy-btn:hover{ background:var(--gold-bg); }
+
+  .status{ display:flex; align-items:flex-start; gap:10px; border-radius:var(--radius-md); padding:14px 16px; margin-top:18px; font-size:14px; line-height:1.5; }
+  .status svg{ flex-shrink:0; margin-top:1px; }
+  .status-good{ background:var(--good-bg); color:var(--good); }
+  .status-bad{ background:var(--bad-bg); color:var(--bad); }
+  .status-warn{ background:var(--warn-bg); color:var(--warn); }
+  .status strong{ display:block; margin-bottom:2px; }
+
+  .strength-bar-bg{ height:8px; border-radius:999px; background:var(--surface-soft); overflow:hidden; border:1px solid var(--border); margin-top:6px; }
+  .strength-bar-fill{ height:100%; border-radius:999px; }
+
+  .output-box{
+    display:flex; align-items:flex-start; gap:10px; margin-top:18px;
+    background:var(--surface-soft); border:1px solid var(--border);
+    border-radius:var(--radius-md); padding:16px;
+  }
+  .output-box .txt{ flex:1; font-family:var(--font-mono); font-size:12.5px; line-height:1.6; color:var(--ink); word-break:break-all; white-space:pre-wrap; max-height:200px; overflow-y:auto; }
+
+  .info-box{ display:flex; gap:10px; align-items:flex-start; background:var(--accent-soft); border:1px solid #dde1fb; border-radius:var(--radius-md); padding:14px 16px; font-size:13px; color:var(--ink-soft); line-height:1.55; margin-top:16px;}
+  .info-box svg{ flex-shrink:0; color:var(--accent-1); margin-top:1px; }
+  .info-box.gold{ background:var(--gold-bg); border-color:var(--gold-border); }
+  .info-box.gold svg{ color:var(--gold-1); }
+
+  table.records{ width:100%; border-collapse:collapse; margin-top:14px; font-size:13px; }
+  table.records th{ text-align:left; font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; padding:8px 10px; border-bottom:1px solid var(--border); }
+  table.records td{ padding:9px 10px; border-bottom:1px solid var(--border); color:var(--ink-soft); }
+  table.records tr:last-child td{ border-bottom:none; }
+  table.records td.strong{ color:var(--ink); font-weight:600; }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:800px){ .two-col{ grid-template-columns:1fr; } }
+  .person-card{ border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; background:var(--surface-soft); }
+  .person-card h4{ margin:0 0 12px 0; font-size:14px; display:flex; align-items:center; gap:8px; }
+  .person-dot{ width:9px; height:9px; border-radius:50%; }
+  .dot-alice{ background:var(--gold-1); }
+  .dot-bob{ background:var(--accent-1); }
+
+  .curve-canvas-wrap{ border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface-soft); padding:12px; margin-top:6px; }
+  canvas{ width:100%; height:auto; display:block; border-radius:8px; background:var(--surface); }
+
+  .divider{ height:1px; background:var(--border); margin:26px 0; }
+  .footnote{ text-align:center; color:var(--ink-faint); font-size:12.5px; margin-top:26px; display:flex; align-items:center; justify-content:center; gap:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+     <a href="../index.html" class="pill back-pill" style="text-decoration: none; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to CryptoKit
+    </a>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <div class="pill lock-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+        100% Client-Side — Nothing Ever Leaves Your Browser
+      </div>
+      <div class="pill toggle-pill" id="themeToggle" title="Toggle Theme"><span id="themeLabel">Normal</span><span class="switch"></span></div>
+    </div>
+  </div>
+
+  <div class="kicker">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l3 6 6.5 1-4.7 4.6L18 19l-6-3.2L6 19l1.2-7.4L2.5 8l6.5-1z"/></svg>
+    Premium Tool
+  </div>
+
+  <div class="hero">
+    <div class="hero-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 15c3-7 6-9 8-9s5 2 8 9"/>
+        <circle cx="7.5" cy="13" r="1.3" fill="#fff" stroke="none"/>
+        <circle cx="16.5" cy="13" r="1.3" fill="#fff" stroke="none"/>
+        <circle cx="12" cy="7.2" r="1.3" fill="#fff" stroke="none"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Advanced ECC Suite</h1>
+      <p>Inspect elliptic-curve keys, run a real ECDH key exchange between two parties, compare ECDSA signature schemes, and visualize the curve math itself — all locally in your browser.</p>
+    </div>
+  </div>
+
+  <div class="tag-row">
+    <span class="tag">ECDH</span>
+    <span class="tag">P-256 / P-384 / P-521</span>
+    <span class="tag tag-gold">★ Premium</span>
+  </div>
+
+  <div class="premium-strip">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l3 6 6.5 1-4.7 4.6L18 19l-6-3.2L6 19l1.2-7.4L2.5 8l6.5-1z"/></svg>
+    Premium unlocked — full suite access
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="inspect">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Key Inspector
+    </button>
+    <button class="tab" data-tab="exchange">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12"/></svg>
+      ECDH Exchange
+    </button>
+    <button class="tab" data-tab="sign">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+      Sign Schemes
+    </button>
+    <button class="tab" data-tab="curve">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15c3-7 6-9 8-9s5 2 8 9"/></svg>
+      Curve Explorer
+    </button>
+  </div>
+
+  <!-- ============ KEY INSPECTOR ============ -->
+  <div class="tab-panel" id="panel-inspect">
+    <div class="panel">
+      <div class="panel-head">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <h2>Inspect an EC key</h2>
+      </div>
+      <p class="panel-sub">Paste a PEM public or private elliptic-curve key (ECDSA or ECDH). This decodes the curve, coordinates, and — for private keys — the raw secret scalar.</p>
+
+      <div class="field">
+        <label for="inspectKey">EC key (PEM)</label>
+        <textarea id="inspectKey" placeholder="-----BEGIN PUBLIC KEY----- or -----BEGIN PRIVATE KEY-----&#10;...&#10;-----END KEY-----"></textarea>
+      </div>
+      <div class="field">
+        <label for="inspectCurve">Curve (used if not auto-detected)</label>
+        <select id="inspectCurve">
+          <option value="P-256" selected>P-256</option>
+          <option value="P-384">P-384</option>
+          <option value="P-521">P-521</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="inspectBtn">Inspect Key</button>
+        <button class="btn btn-ghost" id="genLabKeyBtn">Generate a lab key pair</button>
+      </div>
+
+      <div id="inspectStatus"></div>
+      <div id="inspectResults"></div>
+    </div>
+  </div>
+
+  <!-- ============ ECDH EXCHANGE ============ -->
+  <div class="tab-panel" id="panel-exchange" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12"/></svg>
+        <h2>Run a real ECDH key exchange</h2>
+      </div>
+      <p class="panel-sub">Alice and Bob each generate their own key pair, exchange only their <em>public</em> keys, and independently derive the same shared secret — without ever transmitting it.</p>
+
+      <div class="field">
+        <label for="exchangeCurve">Curve</label>
+        <select id="exchangeCurve">
+          <option value="P-256" selected>P-256</option>
+          <option value="P-384">P-384</option>
+          <option value="P-521">P-521</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="runExchangeBtn">Generate Both Key Pairs &amp; Exchange</button>
+      </div>
+
+      <div id="exchangeStatus"></div>
+
+      <div id="exchangeResults" style="display:none;">
+        <div class="divider"></div>
+        <div class="two-col">
+          <div class="person-card">
+            <h4><span class="person-dot dot-alice"></span>Alice</h4>
+            <div class="kv-card" style="margin-bottom:10px;"><div class="k">Public key (x, hex, truncated)</div><div class="v" id="alicePubX"></div></div>
+            <div class="kv-card"><div class="k">Derived shared secret (SHA-256 of raw bits)</div><div class="v" id="aliceSecret"></div></div>
+          </div>
+          <div class="person-card">
+            <h4><span class="person-dot dot-bob"></span>Bob</h4>
+            <div class="kv-card" style="margin-bottom:10px;"><div class="k">Public key (x, hex, truncated)</div><div class="v" id="bobPubX"></div></div>
+            <div class="kv-card"><div class="k">Derived shared secret (SHA-256 of raw bits)</div><div class="v" id="bobSecret"></div></div>
+          </div>
+        </div>
+        <div id="matchStatus"></div>
+      </div>
+
+      <div class="info-box gold">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+        <div><strong>This is the core idea behind TLS, Signal, and WireGuard.</strong> Neither party ever sends their private key or the shared secret itself — an eavesdropper who sees both public keys still can't compute the shared secret (the Elliptic Curve Diffie-Hellman problem). In production, the raw shared secret is passed through a KDF (like HKDF) before being used as an encryption key.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SIGN SCHEMES ============ -->
+  <div class="tab-panel" id="panel-sign" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        <h2>ECDSA signing across curves</h2>
+      </div>
+      <p class="panel-sub">Sign the same message with different curve/hash combinations and inspect the raw (r, s) signature components.</p>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="signPrivKey">Private key (PEM)</label>
+          <textarea id="signPrivKey" style="min-height:100px;" placeholder="-----BEGIN PRIVATE KEY-----"></textarea>
+        </div>
+        <div class="field">
+          <label for="signPubKey">Public key (PEM, for verify)</label>
+          <textarea id="signPubKey" style="min-height:100px;" placeholder="-----BEGIN PUBLIC KEY-----"></textarea>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="signCurve2">Curve (must match the key)</label>
+          <select id="signCurve2">
+            <option value="P-256" selected>P-256</option>
+            <option value="P-384">P-384</option>
+            <option value="P-521">P-521</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="signHash2">Hash</label>
+          <select id="signHash2">
+            <option value="SHA-256" selected>SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Message</label>
+        <textarea id="signMsg2" style="min-height:80px; font-family:var(--font-body); font-size:14px;" placeholder="Message to sign..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="signRunBtn">Sign &amp; Verify</button>
+      </div>
+
+      <div id="signStatus2"></div>
+      <div class="kv-grid" id="sigResultsGrid" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ============ CURVE EXPLORER ============ -->
+  <div class="tab-panel" id="panel-curve" style="display:none;">
+    <div class="panel">
+      <div class="panel-head">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15c3-7 6-9 8-9s5 2 8 9"/></svg>
+        <h2>Visualize the curve equation</h2>
+      </div>
+      <p class="panel-sub">Every elliptic curve used in cryptography follows the short Weierstrass form <code style="font-family:var(--font-mono); background:var(--surface-soft); padding:1px 5px; border-radius:4px;">y² = x³ + ax + b</code>. This plots it over real numbers (not the actual finite field used in ECDSA) so the shape and point addition are easy to see.</p>
+
+      <div class="field-row">
+        <div class="field">
+          <label>a <span id="aVal">-1</span></label>
+          <input type="range" id="aSlider" min="-5" max="5" step="0.5" value="-1">
+        </div>
+        <div class="field">
+          <label>b <span id="bVal">1</span></label>
+          <input type="range" id="bSlider" min="-5" max="5" step="0.5" value="1">
+        </div>
+      </div>
+
+      <div class="curve-canvas-wrap">
+        <canvas id="curveCanvas" width="900" height="500"></canvas>
+      </div>
+
+      <div class="field-row" style="margin-top:18px;">
+        <div class="field">
+          <label for="p1x">Point P — x coordinate</label>
+          <input type="number" id="p1x" value="-1" step="0.1">
+        </div>
+        <div class="field">
+          <label for="p2x">Point Q — x coordinate</label>
+          <input type="number" id="p2x" value="1.5" step="0.1">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="addPointsBtn">Compute P + Q</button>
+        <button class="btn btn-ghost" id="clearPointsBtn">Clear points</button>
+      </div>
+      <div id="curveStatus"></div>
+
+      <div class="divider"></div>
+      <h3 style="font-size:14px; margin:0 0 4px 0;">Standard curve comparison</h3>
+      <table class="records">
+        <thead><tr><th>Curve</th><th>Field size</th><th>~Security level</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="strong">P-256 (secp256r1)</td><td>256-bit</td><td>128-bit</td><td>Most widely supported; used in TLS, WebAuthn, most Web Crypto deployments</td></tr>
+          <tr><td class="strong">P-384 (secp384r1)</td><td>384-bit</td><td>192-bit</td><td>Used where longer-term security is required (e.g. some government profiles)</td></tr>
+          <tr><td class="strong">P-521 (secp521r1)</td><td>521-bit</td><td>256-bit</td><td>Highest security NIST curve exposed by the Web Crypto API</td></tr>
+          <tr><td class="strong">Curve25519 / Ed25519</td><td>255-bit</td><td>128-bit</td><td>Faster and simpler than NIST curves; <strong>not</strong> supported by the browser Web Crypto API</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footnote">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+    Everything runs locally via the Web Crypto API. No key or content is ever transmitted.
+  </div>
+
+</div>
+
+<script>
+(function(){
+  /* theme toggle (Normal / Hacker), persisted across Quantum Elite / CryptoKit pages */
+  (function(){
+    const saved=localStorage.getItem('qel-theme')||'normal';
+    document.documentElement.setAttribute('data-theme', saved);
+    function syncLabel(){
+      const mode=document.documentElement.getAttribute('data-theme');
+      const label=document.getElementById('themeLabel');
+      if(label) label.textContent = mode==='hacker' ? 'Hacker' : 'Normal';
+    }
+    syncLabel();
+    const sw=document.getElementById('themeToggle');
+    if(sw){
+      sw.addEventListener('click',()=>{
+        const current=document.documentElement.getAttribute('data-theme')||'normal';
+        const next=current==='hacker'?'normal':'hacker';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('qel-theme', next);
+        syncLabel();
+        if(typeof drawCurve === 'function') drawCurve();
+      });
+    }
+    window.addEventListener('storage', function(e){
+      if(e.key==='qel-theme' && e.newValue){
+        document.documentElement.setAttribute('data-theme', e.newValue);
+        syncLabel();
+        if(typeof drawCurve === 'function') drawCurve();
+      }
+    });
+  })();
+
+  // ---------------- Tabs ----------------
+  const tabs = document.querySelectorAll('.tab');
+  const panels = { inspect:'panel-inspect', exchange:'panel-exchange', sign:'panel-sign', curve:'panel-curve' };
+  tabs.forEach(t=>{
+    t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      Object.values(panels).forEach(id=>document.getElementById(id).style.display='none');
+      document.getElementById(panels[t.dataset.tab]).style.display='block';
+      if(t.dataset.tab === 'curve') drawCurve();
+    });
+  });
+
+  // ---------------- Shared helpers ----------------
+  function statusHTML(kind, title, msg){
+    const icons = {
+      good: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.3 2.3L16 10"/></svg>',
+      bad: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+      warn: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>'
+    };
+    return `<div class="status status-${kind}">${icons[kind]}<div><strong>${title}</strong>${msg}</div></div>`;
+  }
+  function abToBase64(buf){
+    let binary=''; const bytes=new Uint8Array(buf);
+    for(let i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+  function base64ToAb(b64){
+    const binary = atob(b64.trim());
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+    return bytes.buffer;
+  }
+  function pemToArrayBuffer(pem){
+    const lines = pem.trim().split('\n').filter(l => !l.includes('-----'));
+    return base64ToAb(lines.join(''));
+  }
+  function arrayBufferToPem(buf, label){
+    const b64 = abToBase64(buf);
+    const lines = b64.match(/.{1,64}/g).join('\n');
+    return `-----BEGIN ${label}-----\n${lines}\n-----END ${label}-----`;
+  }
+  function b64urlToHex(str){
+    if(!str) return '';
+    let s = str.replace(/-/g,'+').replace(/_/g,'/');
+    while(s.length % 4) s += '=';
+    const binary = atob(s);
+    let hex = '';
+    for(let i=0;i<binary.length;i++) hex += binary.charCodeAt(i).toString(16).padStart(2,'0');
+    return hex;
+  }
+  function abToHex(buf){
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function copyable(val){
+    return `<button class="copy-btn" onclick="navigator.clipboard.writeText(this.dataset.v); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy',1200)" data-v="${val.replace(/"/g,'&quot;')}">Copy</button>`;
+  }
+  function curveBits(curve){ return curve === 'P-256' ? 256 : curve === 'P-384' ? 384 : 521; }
+  function hashAlgoForCurve(curve){ return curve === 'P-256' ? 'SHA-256' : curve === 'P-384' ? 'SHA-384' : 'SHA-512'; }
+
+  // ---------------- KEY INSPECTOR ----------------
+  async function tryImportEc(pem, isPrivate, curve){
+    const buf = pemToArrayBuffer(pem);
+    const format = isPrivate ? 'pkcs8' : 'spki';
+    const usages = isPrivate ? ['sign'] : ['verify'];
+    const key = await crypto.subtle.importKey(format, buf, { name:'ECDSA', namedCurve: curve }, true, usages);
+    return crypto.subtle.exportKey('jwk', key);
+  }
+
+  document.getElementById('inspectBtn').addEventListener('click', async ()=>{
+    const status = document.getElementById('inspectStatus');
+    const results = document.getElementById('inspectResults');
+    const pem = document.getElementById('inspectKey').value;
+    const curveGuess = document.getElementById('inspectCurve').value;
+    results.innerHTML = '';
+    if(!pem.includes('BEGIN')){
+      status.innerHTML = statusHTML('bad','No key provided', 'Paste a PEM-formatted EC key above.');
+      return;
+    }
+    const isPrivate = pem.includes('PRIVATE KEY');
+    status.innerHTML = statusHTML('warn','Parsing…', 'Importing and decoding the key structure.');
+    try{
+      const jwk = await tryImportEc(pem, isPrivate, curveGuess);
+      const xHex = b64urlToHex(jwk.x);
+      const yHex = b64urlToHex(jwk.y);
+      const curve = jwk.crv;
+      const bits = curveBits(curve);
+
+      let html = `<div class="divider"></div><div class="kv-grid">
+        <div class="kv-card"><div class="k">Key type</div><div class="v big">${isPrivate ? 'Private' : 'Public'}</div></div>
+        <div class="kv-card"><div class="k">Curve</div><div class="v big">${curve}</div></div>
+        <div class="kv-card" style="grid-column:1/-1;">
+          <div class="k">Field / security</div>
+          <div class="v">${bits}-bit field · ~${bits===256?128:bits===384?192:256}-bit security level</div>
+        </div>
+        <div class="kv-card" style="grid-column:1/-1;">
+          <div class="k">Point X coordinate ${copyable(xHex)}</div>
+          <div class="v">${xHex}</div>
+        </div>
+        <div class="kv-card" style="grid-column:1/-1;">
+          <div class="k">Point Y coordinate ${copyable(yHex)}</div>
+          <div class="v">${yHex}</div>
+        </div>`;
+
+      if(isPrivate){
+        const dHex = b64urlToHex(jwk.d);
+        html += `
+        <div class="kv-card" style="grid-column:1/-1;">
+          <div class="k">Private scalar (d) ${copyable(dHex)}</div>
+          <div class="v">${dHex}</div>
+        </div>`;
+      }
+      html += `</div>`;
+      results.innerHTML = html;
+      status.innerHTML = statusHTML('good','Key parsed', isPrivate
+        ? 'Full private key decoded — the scalar d is the single secret number this entire key pair is built from.'
+        : 'Public key decoded (a point on the curve: X, Y). Paste the matching private key to also see the secret scalar d.');
+    }catch(err){
+      status.innerHTML = statusHTML('bad','Could not parse key', 'Make sure this is a valid PEM SPKI/PKCS8 EC key, and that the selected curve matches. ' + err.message);
+    }
+  });
+
+  document.getElementById('genLabKeyBtn').addEventListener('click', async ()=>{
+    const status = document.getElementById('inspectStatus');
+    const curve = document.getElementById('inspectCurve').value;
+    status.innerHTML = statusHTML('warn','Generating…', `Creating a fresh ECDSA ${curve} key pair for the lab.`);
+    try{
+      const keyPair = await crypto.subtle.generateKey({ name:'ECDSA', namedCurve: curve }, true, ['sign','verify']);
+      const pubPem = arrayBufferToPem(await crypto.subtle.exportKey('spki', keyPair.publicKey), 'PUBLIC KEY');
+      const privPem = arrayBufferToPem(await crypto.subtle.exportKey('pkcs8', keyPair.privateKey), 'PRIVATE KEY');
+      document.getElementById('inspectKey').value = privPem;
+      document.getElementById('signPrivKey').value = privPem;
+      document.getElementById('signPubKey').value = pubPem;
+      document.getElementById('signCurve2').value = curve;
+      status.innerHTML = statusHTML('good','Lab key pair generated', 'Dropped the private key above and prefilled the Sign Schemes tab too. Click "Inspect Key" to decode it.');
+    }catch(err){
+      status.innerHTML = statusHTML('bad','Generation failed', err.message);
+    }
+  });
+
+  // ---------------- ECDH EXCHANGE ----------------
+  document.getElementById('runExchangeBtn').addEventListener('click', async ()=>{
+    const status = document.getElementById('exchangeStatus');
+    const results = document.getElementById('exchangeResults');
+    const curve = document.getElementById('exchangeCurve').value;
+    status.innerHTML = statusHTML('warn','Running exchange…', `Generating two independent ${curve} key pairs for Alice and Bob.`);
+    results.style.display = 'none';
+    try{
+      const aliceKeys = await crypto.subtle.generateKey({ name:'ECDH', namedCurve: curve }, true, ['deriveBits']);
+      const bobKeys = await crypto.subtle.generateKey({ name:'ECDH', namedCurve: curve }, true, ['deriveBits']);
+
+      // Each party derives shared bits using their own private key + the other's public key
+      const bitLen = curveBits(curve);
+      const aliceSharedBits = await crypto.subtle.deriveBits(
+        { name:'ECDH', public: bobKeys.publicKey }, aliceKeys.privateKey, bitLen
+      );
+      const bobSharedBits = await crypto.subtle.deriveBits(
+        { name:'ECDH', public: aliceKeys.publicKey }, bobKeys.privateKey, bitLen
+      );
+
+      const aliceSecretHash = await crypto.subtle.digest('SHA-256', aliceSharedBits);
+      const bobSecretHash = await crypto.subtle.digest('SHA-256', bobSharedBits);
+      const aliceHex = abToHex(aliceSecretHash);
+      const bobHex = abToHex(bobSecretHash);
+
+      const aliceJwk = await crypto.subtle.exportKey('jwk', aliceKeys.publicKey);
+      const bobJwk = await crypto.subtle.exportKey('jwk', bobKeys.publicKey);
+      document.getElementById('alicePubX').textContent = b64urlToHex(aliceJwk.x).slice(0,40) + '…';
+      document.getElementById('bobPubX').textContent = b64urlToHex(bobJwk.x).slice(0,40) + '…';
+      document.getElementById('aliceSecret').textContent = aliceHex;
+      document.getElementById('bobSecret').textContent = bobHex;
+      results.style.display = 'block';
+
+      const match = aliceHex === bobHex;
+      document.getElementById('matchStatus').innerHTML = match
+        ? statusHTML('good','Shared secrets match!', 'Alice and Bob independently arrived at the exact same secret — using only their own private key and the other party\'s public key. This secret was never transmitted.')
+        : statusHTML('bad','Secrets do not match', 'Something went wrong deriving the shared secret.');
+      status.innerHTML = '';
+    }catch(err){
+      status.innerHTML = statusHTML('bad','Exchange failed', err.message);
+    }
+  });
+
+  // ---------------- SIGN SCHEMES ----------------
+  document.getElementById('signRunBtn').addEventListener('click', async ()=>{
+    const status = document.getElementById('signStatus2');
+    const grid = document.getElementById('sigResultsGrid');
+    const privPem = document.getElementById('signPrivKey').value;
+    const pubPem = document.getElementById('signPubKey').value;
+    const curve = document.getElementById('signCurve2').value;
+    const hash = document.getElementById('signHash2').value;
+    const msg = document.getElementById('signMsg2').value;
+
+    if(!privPem.includes('PRIVATE KEY') || !pubPem.includes('PUBLIC KEY') || !msg){
+      status.innerHTML = statusHTML('bad','Missing input', 'Provide a private key, matching public key, and a message.');
+      grid.style.display='none'; return;
+    }
+    try{
+      const privKey = await crypto.subtle.importKey('pkcs8', pemToArrayBuffer(privPem), { name:'ECDSA', namedCurve: curve }, false, ['sign']);
+      const pubKey = await crypto.subtle.importKey('spki', pemToArrayBuffer(pubPem), { name:'ECDSA', namedCurve: curve }, false, ['verify']);
+      const enc = new TextEncoder().encode(msg);
+      const sigBuf = await crypto.subtle.sign({ name:'ECDSA', hash }, privKey, enc);
+      const valid = await crypto.subtle.verify({ name:'ECDSA', hash }, pubKey, sigBuf, enc);
+
+      // Web Crypto ECDSA signatures are raw (r || s), each half the same length
+      const sigBytes = new Uint8Array(sigBuf);
+      const half = sigBytes.length / 2;
+      const rHex = Array.from(sigBytes.slice(0, half)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      const sHex = Array.from(sigBytes.slice(half)).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+      grid.style.display = 'grid';
+      grid.innerHTML = `
+        <div class="kv-card" style="grid-column:1/-1;"><div class="k">r component ${copyable(rHex)}</div><div class="v">${rHex}</div></div>
+        <div class="kv-card" style="grid-column:1/-1;"><div class="k">s component ${copyable(sHex)}</div><div class="v">${sHex}</div></div>
+        <div class="kv-card"><div class="k">Signature size</div><div class="v big">${sigBytes.length} bytes</div></div>
+        <div class="kv-card"><div class="k">Verification</div><div class="v big" style="color:${valid?'var(--good)':'var(--bad)'}">${valid ? 'Valid ✓' : 'Failed'}</div></div>`;
+      status.innerHTML = statusHTML('good','Signed & verified', `ECDSA ${curve} / ${hash} produced a compact ${sigBytes.length}-byte signature — notice how much smaller this is than an equivalent-strength RSA signature.`);
+    }catch(err){
+      status.innerHTML = statusHTML('bad','Operation failed', err.message + ' — make sure the private and public key are a matching pair on the selected curve.');
+      grid.style.display='none';
+    }
+  });
+
+  // ---------------- CURVE EXPLORER (canvas) ----------------
+  const canvas = document.getElementById('curveCanvas');
+  const ctx = canvas.getContext('2d');
+  const aSlider = document.getElementById('aSlider');
+  const bSlider = document.getElementById('bSlider');
+  let lastAddedPoints = null;
+
+  function worldToScreen(x, y, scale, cx, cy){
+    return { sx: cx + x*scale, sy: cy - y*scale };
+  }
+
+  function drawCurve(){
+    const W = canvas.width, H = canvas.height;
+    const a = parseFloat(aSlider.value), b = parseFloat(bSlider.value);
+    document.getElementById('aVal').textContent = a;
+    document.getElementById('bVal').textContent = b;
+
+    const dark = document.documentElement.getAttribute('data-theme') === 'hacker';
+    const bgColor = dark ? '#0e0e1c' : '#ffffff';
+    const axisColor = dark ? '#2b2740' : '#e1e3f5';
+    const curveColor = dark ? '#fbbf24' : '#d97706';
+    const lineColor = dark ? '#818cf8' : '#6366f1';
+    const labelColor = dark ? '#f1f1fb' : '#1c1f37';
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0,0,W,H);
+
+    const scale = 55;
+    const cx = W/2, cy = H/2;
+
+    // axes
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+
+    // curve: y^2 = x^3 + a x + b  -> y = +-sqrt(...)
+    ctx.strokeStyle = curveColor;
+    ctx.lineWidth = 2.5;
+    const xMin = -cx/scale, xMax = cx/scale;
+    let started = false;
+    ctx.beginPath();
+    for(let px=0; px<=W; px++){
+      const x = (px - cx)/scale;
+      const rhs = x*x*x + a*x + b;
+      if(rhs >= 0){
+        const y = Math.sqrt(rhs);
+        const p = worldToScreen(x, y, scale, cx, cy);
+        if(!started){ ctx.moveTo(p.sx, p.sy); started = true; } else { ctx.lineTo(p.sx, p.sy); }
+      } else {
+        started = false;
+      }
+    }
+    ctx.stroke();
+    started = false;
+    ctx.beginPath();
+    for(let px=0; px<=W; px++){
+      const x = (px - cx)/scale;
+      const rhs = x*x*x + a*x + b;
+      if(rhs >= 0){
+        const y = -Math.sqrt(rhs);
+        const p = worldToScreen(x, y, scale, cx, cy);
+        if(!started){ ctx.moveTo(p.sx, p.sy); started = true; } else { ctx.lineTo(p.sx, p.sy); }
+      } else {
+        started = false;
+      }
+    }
+    ctx.stroke();
+
+    if(lastAddedPoints){
+      const { P, Q, R, line } = lastAddedPoints;
+      // line through P and Q extended
+      ctx.strokeStyle = lineColor;
+      ctx.setLineDash([6,5]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      const x1 = -cx/scale, x2 = cx/scale;
+      const y1 = line.m*(x1-P.x)+P.y, y2 = line.m*(x2-P.x)+P.y;
+      const s1 = worldToScreen(x1,y1,scale,cx,cy), s2 = worldToScreen(x2,y2,scale,cx,cy);
+      ctx.moveTo(s1.sx, s1.sy); ctx.lineTo(s2.sx, s2.sy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      function dot(pt, color, label){
+        const s = worldToScreen(pt.x, pt.y, scale, cx, cy);
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(s.sx, s.sy, 6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = labelColor;
+        ctx.font = '600 13px sans-serif';
+        ctx.fillText(label, s.sx+10, s.sy-8);
+      }
+      dot(P, curveColor, 'P');
+      dot(Q, curveColor, 'Q');
+      dot(R, '#38bdf8', 'P+Q');
+    }
+  }
+  aSlider.addEventListener('input', drawCurve);
+  bSlider.addEventListener('input', drawCurve);
+
+  document.getElementById('addPointsBtn').addEventListener('click', ()=>{
+    const status = document.getElementById('curveStatus');
+    const a = parseFloat(aSlider.value), b = parseFloat(bSlider.value);
+    const x1 = parseFloat(document.getElementById('p1x').value);
+    const x2 = parseFloat(document.getElementById('p2x').value);
+    const rhs1 = x1*x1*x1 + a*x1 + b;
+    const rhs2 = x2*x2*x2 + a*x2 + b;
+    if(rhs1 < 0 || rhs2 < 0){
+      status.innerHTML = statusHTML('bad','Point not on curve', 'For this a/b, one of those x values gives a negative y² — pick different x coordinates or adjust a/b.');
+      return;
+    }
+    const y1 = Math.sqrt(rhs1), y2 = Math.sqrt(rhs2);
+    const P = { x:x1, y:y1 }, Q = { x:x2, y:y2 };
+    if(Math.abs(x1-x2) < 1e-9 ){
+      status.innerHTML = statusHTML('warn','Same x coordinate', 'Pick two points with different x values for a clear addition (point doubling needs a tangent line, not shown in this simple demo).');
+      return;
+    }
+    const m = (y2-y1)/(x2-x1);
+    const x3 = m*m - x1 - x2;
+    const y3 = m*(x1-x3) - y1;
+    const R = { x:x3, y:-y3 };
+    lastAddedPoints = { P, Q, R, line: { m } };
+    drawCurve();
+    status.innerHTML = statusHTML('good','P + Q computed', `The line through P and Q hits the curve at a third point; reflecting it over the x-axis gives P+Q = (${R.x.toFixed(3)}, ${R.y.toFixed(3)}). This geometric rule is the group law that makes ECC work.`);
+  });
+  document.getElementById('clearPointsBtn').addEventListener('click', ()=>{
+    lastAddedPoints = null;
+    document.getElementById('curveStatus').innerHTML = '';
+    drawCurve();
+  });
+
+  drawCurve();
+})();
+</script>
+</body>
+</html>
