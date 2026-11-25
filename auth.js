@@ -1,33 +1,67 @@
 /* ═══════════════════════════════════════════════════════
-   AUTH.JS — Task 1: Frontend-only Login / Sign Up flow
+   AUTH.JS — Real authentication (talks to the CryptoKit backend)
    ═══════════════════════════════════════════════════════
-   IMPORTANT: This is a TEMPORARY, client-side-only stand-in
-   for real authentication. There is no server, no database,
-   and no password hashing here — nothing here is secure.
+   The backend (backend/ folder, Node + Express + MongoDB) is the
+   source of truth. Login state lives in a secure HTTP-only session
+   cookie that JavaScript cannot read.
 
-   What it does today:
-     - Shows the auth screen first, main site after "login"
-     - Validates the login/signup forms on the frontend only
-     - Simulates a successful login/signup (no real account
-       is created or checked)
-     - Remembers the "logged in" state in the browser only,
-       via sessionStorage (this tab/session) or localStorage
-       (if "Remember me" is checked)
-     - Provides a Logout button that just returns the user to
-       this screen
+   The 'cryptokit_auth' flag in storage is ONLY a UI hint so the page
+   does not flash the wrong screen while loading. It never grants
+   access to anything: on every page load we ask the server
+   (GET /api/auth/me) and fix the screen if the flag was wrong.
 
-   How to swap this for real auth later:
-     - Replace the body of `handleLogin()` / `handleSignup()`
-       with real API calls (e.g. fetch('/api/login', ...))
-     - Replace `setAuthenticated(true, remember)` with logic
-       that stores a real session token instead of the
-       'cryptokit_auth' flag
-     - Replace `handleLogout()` with a real API call that
-       invalidates the server-side session, then clears the
-       local flag the same way it does now
+   Open the site through the backend (http://localhost:3000), not by
+   double-clicking the HTML file, so the session cookie works.
    ═══════════════════════════════════════════════════════ */
 
 var AUTH_STORAGE_KEY = 'cryptokit_auth';
+var AUTH_API_BASE = '/api/auth';
+
+/* ──────────────────────────────────────
+   Tiny API client
+   Resolves with the JSON body, or rejects with an Error that has
+   .status (HTTP code, 0 = could not reach server) and .code.
+────────────────────────────────────── */
+function authApi(method, path, body) {
+    var opts = { method: method, credentials: 'same-origin', headers: {} };
+    if (body) {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(body);
+    }
+    return fetch(AUTH_API_BASE + path, opts).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+            if (!res.ok) {
+                var err = new Error(data.error || 'Request failed');
+                err.status = res.status;
+                err.code = data.code;
+                throw err;
+            }
+            return data;
+        });
+    }, function () {
+        var err = new Error('Cannot reach the server. Open the site at http://localhost:3000 and make sure the backend is running.');
+        err.status = 0;
+        throw err;
+    });
+}
+
+function setSubmitting(formId, busy) {
+    var form = document.getElementById(formId);
+    var btn = form && form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = !!busy;
+}
+
+/* Small message that works on any screen (used after email verification) */
+function showToast(type, message) {
+    var el = document.createElement('div');
+    el.textContent = message;
+    el.setAttribute('role', 'status');
+    el.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100000;' +
+        'padding:12px 18px;border-radius:10px;font:600 14px system-ui,sans-serif;color:#fff;max-width:90vw;' +
+        'box-shadow:0 8px 24px rgba(0,0,0,.35);background:' + (type === 'success' ? '#16a34a' : '#dc2626');
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 6000);
+}
 
 /* ──────────────────────────────────────
    Screen switching: auth screen <-> main app
@@ -59,7 +93,7 @@ function showAuthScreen() {
 }
 
 /* ──────────────────────────────────────
-   Persist / read the temporary auth flag
+   UI hint flag (NOT real authentication — see top of file)
 ────────────────────────────────────── */
 function setAuthenticated(isAuthed, remember) {
     try {
@@ -76,8 +110,7 @@ function setAuthenticated(isAuthed, remember) {
             sessionStorage.removeItem(AUTH_STORAGE_KEY);
         }
     } catch (e) {
-        /* Storage may be unavailable (e.g. private mode) — the
-           session will simply not persist across reloads. */
+        /* Storage may be unavailable (e.g. private mode) — harmless, the server session still works. */
     }
 }
 
@@ -213,15 +246,22 @@ function handleLogin(event) {
         return false;
     }
 
-    /* ── TEMPORARY: no real authentication yet ──
-       Any valid-looking email/password combination "succeeds".
-       Replace this block with a real API call later. */
-    showBanner('loginBanner', 'success', 'Login successful — loading CryptoKit…');
-    setAuthenticated(true, remember);
-
-    setTimeout(function () {
-        showMainApp();
-    }, 500);
+    setSubmitting('loginForm', true);
+    authApi('POST', '/login', { email: email, password: password, remember: remember })
+        .then(function () {
+            setAuthenticated(true, remember);
+            showBanner('loginBanner', 'success', 'Login successful — loading CryptoKit…');
+            setTimeout(function () {
+                showMainApp();
+                var f = document.getElementById('loginForm');
+                if (f) f.reset();
+            }, 500);
+        })
+        .catch(function (err) {
+            var type = (err.code === 'EMAIL_NOT_VERIFIED') ? 'info' : 'error';
+            showBanner('loginBanner', type, err.message);
+        })
+        .then(function () { setSubmitting('loginForm', false); });
 
     return false;
 }
@@ -243,6 +283,9 @@ function handleSignup(event) {
     if (!name) {
         setFieldError('signupName', 'signupNameError', 'Name is required.');
         valid = false;
+    } else if (name.length < 2) {
+        setFieldError('signupName', 'signupNameError', 'Name must be at least 2 characters.');
+        valid = false;
     }
 
     if (!email) {
@@ -255,6 +298,9 @@ function handleSignup(event) {
 
     if (!password) {
         setFieldError('signupPassword', 'signupPasswordError', 'Password is required.');
+        valid = false;
+    } else if (password.length < 8) {
+        setFieldError('signupPassword', 'signupPasswordError', 'Password must be at least 8 characters.');
         valid = false;
     }
 
@@ -271,27 +317,56 @@ function handleSignup(event) {
         return false;
     }
 
-    /* ── TEMPORARY: no real account is created yet ──
-       Replace this block with a real API call later. */
-    showBanner('signupBanner', 'success', 'Account created — logging you in…');
-    setAuthenticated(true, false);
-
-    setTimeout(function () {
-        showMainApp();
-    }, 600);
+    setSubmitting('signupForm', true);
+    authApi('POST', '/register', { name: name, email: email, password: password })
+        .then(function () {
+            setAuthenticated(true, false);
+            showBanner('signupBanner', 'success', 'Account created — check your email to verify it. Logging you in…');
+            setTimeout(function () {
+                showMainApp();
+                var f = document.getElementById('signupForm');
+                if (f) f.reset();
+            }, 900);
+        })
+        .catch(function (err) {
+            if (err.status === 409) {
+                setFieldError('signupEmail', 'signupEmailError', err.message);
+                showBanner('signupBanner', 'error', 'Please fix the highlighted fields.');
+            } else {
+                showBanner('signupBanner', 'error', err.message);
+            }
+        })
+        .then(function () { setSubmitting('signupForm', false); });
 
     return false;
 }
 
 /* ──────────────────────────────────────
-   Forgot password (no backend yet)
+   Forgot password (uses the email typed in the login form)
 ────────────────────────────────────── */
 function handleForgotPassword() {
-    showBanner('loginBanner', 'info', 'Password reset isn\'t available in this preview yet.');
+    clearFormErrors('loginForm');
+    hideBanner('loginBanner');
+
+    var email = document.getElementById('loginEmail').value.trim();
+    if (!email || !isValidEmail(email)) {
+        setFieldError('loginEmail', 'loginEmailError', 'Enter your email here first, then click "Forgot password?".');
+        return;
+    }
+
+    authApi('POST', '/forgot-password', { email: email })
+        .then(function (data) {
+            showBanner('loginBanner', 'success', data.message || 'If that email is registered, a reset link has been sent.');
+        })
+        .catch(function (err) {
+            showBanner('loginBanner', 'error', err.message);
+        });
 }
 
 /* ──────────────────────────────────────
    Logout
+   The screen changes immediately; the server session is destroyed
+   in the background. If that fails we tell the user.
 ────────────────────────────────────── */
 function handleLogout() {
     setAuthenticated(false, false);
@@ -301,19 +376,55 @@ function handleLogout() {
     var signupForm = document.getElementById('signupForm');
     if (loginForm)  loginForm.reset();
     if (signupForm) signupForm.reset();
+
+    authApi('POST', '/logout').catch(function () {
+        showBanner('loginBanner', 'error', 'Could not reach the server to finish logging out. Please try again.');
+    });
 }
 
 /* ──────────────────────────────────────
-   On load: sync nav buttons with auth state
-   (the inline script in index.html already
-   picked the correct starting screen to avoid
-   a flash — this just syncs the nav buttons)
+   On load: ask the server who is logged in
 ────────────────────────────────────── */
+function verifySession() {
+    authApi('GET', '/me')
+        .then(function () {
+            if (!isAuthenticated()) setAuthenticated(true, false);
+            showMainApp();
+        })
+        .catch(function (err) {
+            if (err.status === 401) {
+                /* No valid server session: the UI hint was stale or forged. */
+                var hadFlag = isAuthenticated();
+                setAuthenticated(false, false);
+                if (hadFlag) showAuthScreen();
+            }
+            /* Network error: leave the screen as it is. */
+        });
+}
+
+/* Message after clicking the link in the verification email (/?emailVerified=1 or 0) */
+function showEmailVerifiedResult() {
+    var m = /[?&]emailVerified=([01])/.exec(window.location.search);
+    if (!m) return;
+    if (m[1] === '1') showToast('success', 'Email verified. Thank you!');
+    else showToast('error', 'This verification link is invalid or has expired.');
+    if (window.history && history.replaceState) history.replaceState(null, '', window.location.pathname);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    /* index.html still says "Frontend preview only"; replace with the truth. */
+    var note = document.querySelector('.auth-footnote');
+    if (note) {
+        note.innerHTML = '<i class="fas fa-circle-info"></i> Your password is hashed and stored securely. Crypto tool inputs never leave your browser.';
+    }
+
     if (isAuthenticated()) {
         var loginBtn  = document.getElementById('navLoginBtn');
         var logoutBtn = document.getElementById('navLogoutBtn');
         if (loginBtn)  loginBtn.style.display  = 'none';
         if (logoutBtn) logoutBtn.style.display = 'inline-flex';
     }
+
+    verifySession();
+    showEmailVerifiedResult();
 });

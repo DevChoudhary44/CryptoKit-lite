@@ -1,5 +1,5 @@
 'use strict';
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') }); // always read backend/.env
 
 // Windows/India networks par IPv6 / DNS ki wajah se Atlas timeout hota hai, isliye IPv4 + Google DNS
 const dns = require('dns');
@@ -76,7 +76,20 @@ if (process.env.USE_AUTH_OVERRIDE === 'true') {
 }
 
 // ---- Frontend (static files from the repo root after merge) ----
-const FRONTEND_DIR = path.resolve(__dirname, process.env.FRONTEND_DIR || '..');
+const fs = require('fs');
+function findFrontendDir() {
+  const hasIndex = (d) => fs.existsSync(path.join(d, 'index.html'));
+  if (process.env.FRONTEND_DIR) {
+    const wanted = path.resolve(__dirname, process.env.FRONTEND_DIR);
+    if (hasIndex(wanted)) return wanted;
+    console.warn(`WARNING: FRONTEND_DIR in .env points to "${wanted}" but there is no index.html there. Ignoring it and searching automatically.`);
+  }
+  // First folder that really contains index.html: the parent of backend/, then the folder npm was started from
+  const candidates = [path.resolve(__dirname, '..'), process.cwd(), path.resolve(process.cwd(), '..')];
+  return candidates.find(hasIndex) || candidates[0];
+}
+const FRONTEND_DIR = findFrontendDir();
+const HAS_INDEX = fs.existsSync(path.join(FRONTEND_DIR, 'index.html'));
 const backendFolder = '/' + path.basename(__dirname).toLowerCase();
 
 app.use((req, res, next) => {
@@ -89,6 +102,12 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(FRONTEND_DIR, { dotfiles: 'ignore', index: 'index.html' }));
+if (!HAS_INDEX) {
+  app.get('/', (req, res) => res.status(500).type('text/plain').send(
+    'Backend is running, but no index.html was found in:\n  ' + FRONTEND_DIR +
+    '\n\nFix: put the backend folder inside the folder that has index.html, or set FRONTEND_DIR in backend/.env.'
+  ));
+}
 
 // ---- Errors ----
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
